@@ -14,16 +14,16 @@
 SELECT
     target_id,
     trimBoth(branch)                                        AS branch,
-    toInt32OrZero(trimBoth(month))                          AS month,
-    toInt32OrZero(trimBoth(year))                           AS year,
-    toDecimal64OrZero(trimBoth(sales_target), 2)            AS sales_target,
-    toInt32OrZero(trimBoth(order_target))                   AS order_target,
+    toInt32OrZero(toString(month))                          AS month,
+    toInt32OrZero(toString(year))                           AS year,
+    toDecimal64OrZero(toString(sales_target), 2)            AS sales_target,
+    toInt32OrZero(toString(order_target))                   AS order_target,
 
     -- Label periode: "Jan 2024", "Feb 2024", dll
     formatDateTime(
         makeDate(
-            toInt32OrZero(trimBoth(year)),
-            toInt32OrZero(trimBoth(month)),
+            toInt32OrZero(toString(year)),
+            toInt32OrZero(toString(month)),
             1
         ),
         '%b %Y'
@@ -32,5 +32,5 @@ SELECT
 FROM {{ ref('bronze_targets') }}
 WHERE
     target_id    IS NOT NULL AND target_id != ''
-    AND sales_target IS NOT NULL AND sales_target != ''
-    AND toFloat64OrZero(trimBoth(sales_target)) > 0
+    AND sales_target IS NOT NULL
+    AND toFloat64OrZero(toString(sales_target)) > 0
