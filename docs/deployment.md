@@ -52,7 +52,7 @@ docker compose ps
 # clickhouse → healthy
 ```
 
-### 5. Jalankan ETL
+### 5. Jalankan ETL — TAHAP 1 + 2 (Extract & Load Bronze)
 
 ```bash
 docker compose run --rm app
@@ -60,19 +60,42 @@ docker compose run --rm app
 
 Output yang diharapkan:
 ```
-[Step 1/3] Inisialisasi ClickHouse...
-  Database 'bronze' siap.
-  Database 'silver' siap.
-  Database 'gold' siap.
-[Step 2/3] Load CSV sample ke bronze...
-  Loaded   50 baris → bronze.sales
-  Loaded   20 baris → bronze.customers
-  Loaded   30 baris → bronze.reviews
-  Loaded   25 baris → bronze.targets
-Pipeline ETL selesai.
+====================================================
+  Minilab EduBI — Data Pipeline
+====================================================
+┌─────────────────────────────────────────────┐
+│  TAHAP 0 — Inisialisasi ClickHouse           │
+└─────────────────────────────────────────────┘
+  Database bronze siap.
+  Database silver siap.
+  Database gold siap.
+┌─────────────────────────────────────────────┐
+│  TAHAP 1A — Extract Odoo (PostgreSQL)        │
+└─────────────────────────────────────────────┘
+  10 customers → data/raw/odoo_customers.csv
+  10 sales     → data/raw/odoo_sales.csv
+┌─────────────────────────────────────────────┐
+│  TAHAP 1B — Extract Google Reviews           │
+└─────────────────────────────────────────────┘
+  30 reviews ← sample_reviews.csv (fallback)
+┌─────────────────────────────────────────────┐
+│  TAHAP 1C — File Manual CSV/XLS              │
+└─────────────────────────────────────────────┘
+  ✓ sample_sales.csv    (50 baris)
+  ✓ sample_targets.csv  (25 baris)
+┌─────────────────────────────────────────────┐
+│  TAHAP 2 — Load ke Bronze (ClickHouse)       │
+└─────────────────────────────────────────────┘
+  10 baris → bronze.customers  ← [extracted] odoo_customers.csv
+  10 baris → bronze.sales      ← [extracted] odoo_sales.csv
+  30 baris → bronze.reviews    ← [sample]    sample_reviews.csv
+  25 baris → bronze.targets    ← [sample]    sample_targets.csv
 ```
 
-### 6. Jalankan dbt
+> Jika koneksi PostgreSQL gagal, ETL otomatis fallback ke `sample_customers.csv`
+> dan `sample_sales.csv`.
+
+### 6. Jalankan dbt — TAHAP 3 + 4 (Transform Silver & Gold)
 
 ```bash
 docker compose run --rm dbt
@@ -80,8 +103,23 @@ docker compose run --rm dbt
 
 Output yang diharapkan:
 ```
-... dbt run: 11 of 11 OK
-... dbt test: passed
+┌─────────────────────────────────────────────┐
+│  TAHAP 3 — Transform ke Silver (ClickHouse)  │
+└─────────────────────────────────────────────┘
+  silver_sales       OK
+  silver_customers   OK
+  silver_reviews     OK
+  silver_targets     OK
+┌─────────────────────────────────────────────┐
+│  TAHAP 4 — Transform ke Gold (ClickHouse)    │
+└─────────────────────────────────────────────┘
+  gold_sales_daily     OK
+  gold_branch_kpi      OK
+  gold_review_summary  OK
+┌─────────────────────────────────────────────┐
+│  Validasi dbt Tests                          │
+└─────────────────────────────────────────────┘
+  Passed: 14 tests
 ```
 
 ### 7. Jalankan Metabase
@@ -91,6 +129,25 @@ docker compose up -d metabase
 ```
 
 Buka **http://localhost:3000** (tunggu 1-2 menit startup).
+
+---
+
+## Menjalankan Pipeline Lengkap (Satu Perintah)
+
+Alternatif otomatis yang menjalankan seluruh 5 tahap sekaligus:
+
+```bash
+bash scripts/run_pipeline_full.sh
+```
+
+Skrip ini secara berurutan:
+1. Menjalankan `docker compose up -d postgres clickhouse` (tunggu healthy)
+2. Menjalankan `docker compose run --rm app` (TAHAP 1+2: Extract + Load Bronze)
+3. Menjalankan `docker compose run --rm dbt` (TAHAP 3+4: Silver + Gold)
+4. Menjalankan `docker compose up -d metabase` (TAHAP 5: Visualisasi)
+5. Menampilkan instruksi konfigurasi Metabase
+
+> Cocok untuk demo cepat atau reset ulang lingkungan pengembangan.
 
 ---
 
@@ -119,8 +176,12 @@ docker compose down -v
 ## Menjalankan Ulang Pipeline
 
 ```bash
-docker compose run --rm app   # ETL ulang
-docker compose run --rm dbt   # dbt ulang
+# Jalankan ulang per tahap
+docker compose run --rm app   # TAHAP 1+2: Extract + Load Bronze
+docker compose run --rm dbt   # TAHAP 3+4: Transform Silver + Gold
+
+# Atau jalankan semua sekaligus
+bash scripts/run_pipeline_full.sh
 ```
 
 ---

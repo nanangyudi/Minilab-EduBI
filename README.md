@@ -53,6 +53,30 @@ Cabang: Pusat, Bandung, Surabaya, Selatan, Yogyakarta.
 - Docker Desktop terinstall dan berjalan
 - Port 3000, 5432, 8123 tidak dipakai aplikasi lain
 
+---
+
+### Opsi A — Satu Perintah (Otomatis)
+
+Jalankan semua 5 tahap pipeline sekaligus:
+
+```bash
+git clone https://github.com/nanangyudi/Minilab-EduBI.git
+cd Minilab-EduBI
+git checkout claude/connect-edubi-repo-Ybjvh
+cp .env.example .env
+docker compose build
+bash scripts/run_pipeline_full.sh
+```
+
+Skrip akan menjalankan seluruh pipeline secara otomatis:
+infrastructure → Extract → Load Bronze → Transform Silver → Transform Gold → Metabase.
+
+---
+
+### Opsi B — Langkah Manual (Direkomendasikan untuk Belajar)
+
+Jalankan setiap tahap secara terpisah agar proses lebih mudah dipahami.
+
 ```bash
 # 1. Clone repository
 git clone https://github.com/nanangyudi/Minilab-EduBI.git
@@ -65,17 +89,24 @@ cp .env.example .env
 # 3. Build image
 docker compose build
 
-# 4. Jalankan PostgreSQL dan ClickHouse
+# 4. Jalankan infrastructure
 docker compose up -d postgres clickhouse
 # Tunggu ~15 detik hingga keduanya healthy
 
-# 5. Jalankan ETL (sekali jalan)
+# 5. TAHAP 1 + 2 — Extract & Load Bronze
 docker compose run --rm app
+# → TAHAP 1A: Extract dari Odoo (PostgreSQL odoo_sim)
+# → TAHAP 1B: Extract Google Reviews (atau fallback sample)
+# → TAHAP 1C: File manual CSV siap di data/raw/
+# → TAHAP 2 : Load semua CSV ke ClickHouse bronze.*
 
-# 6. Jalankan dbt (sekali jalan)
+# 6. TAHAP 3 + 4 — Transform Silver & Gold
 docker compose run --rm dbt
+# → TAHAP 3: dbt transform → silver (clean, typed)
+# → TAHAP 4: dbt transform → gold  (agregasi KPI)
+# → Validasi: dbt test
 
-# 7. Jalankan Metabase
+# 7. TAHAP 5 — Visualisasi Metabase
 docker compose up -d metabase
 # Buka http://localhost:3000 (tunggu ~2 menit)
 ```
@@ -127,9 +158,10 @@ Minilab-EduBI/
 │       └── gold/               ← 3 model (aggregated, ClickHouse SQL)
 │
 ├── scripts/
-│   ├── init_postgres.sql     ← seed data odoo_sim
-│   ├── run_etl.sh
-│   └── run_dbt.sh
+│   ├── init_postgres.sql       ← seed data odoo_sim
+│   ├── run_etl.sh              ← jalankan ETL (TAHAP 1+2)
+│   ├── run_dbt.sh              ← jalankan dbt (TAHAP 3+4)
+│   └── run_pipeline_full.sh    ← jalankan semua 5 tahap sekaligus
 │
 ├── notebooks/
 │   └── exploration.ipynb     ← eksplorasi via clickhouse-connect
