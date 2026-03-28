@@ -1,0 +1,21 @@
+customer_id,name,email,phone,city,branch,customer_since
+C001,Andi Saputra,andi.saputra@email.com,081234567001,Jakarta,Pusat,2021-03-15
+C002,Budi Santoso,budi.santoso@email.com,081234567002,Bandung,Bandung,2020-07-22
+C003,Citra Dewi,citra.dewi@email.com,081234567003,Jakarta,Pusat,2022-01-10
+C004,Dian Rahmawati,dian.rahmawati@email.com,081234567004,Surabaya,Surabaya,2019-11-05
+C005,Eka Prasetyo,eka.prasetyo@email.com,081234567005,Jakarta,Selatan,2021-08-30
+C006,Fajar Nugroho,fajar.nugroho@email.com,081234567006,Bandung,Bandung,2022-04-18
+C007,Gita Lestari,gita.lestari@email.com,081234567007,Surabaya,Surabaya,2020-02-14
+C008,Hendra Wijaya,hendra.wijaya@email.com,081234567008,Jakarta,Pusat,2023-06-01
+C009,Indah Permata,indah.permata@email.com,081234567009,Yogyakarta,Yogyakarta,2021-12-20
+C010,Joko Susilo,joko.susilo@email.com,081234567010,Jakarta,Selatan,2019-05-09
+C011,Kartika Sari,kartika.sari@email.com,081234567011,Bandung,Bandung,2022-09-25
+C012,Lutfi Hakim,lutfi.hakim@email.com,081234567012,Jakarta,Pusat,2020-10-13
+C013,Maya Putri,maya.putri@email.com,081234567013,Surabaya,Surabaya,2023-01-07
+C014,Nanda Rizki,nanda.rizki@email.com,081234567014,Yogyakarta,Yogyakarta,2021-04-28
+C015,Oki Firmansyah,oki.firmansyah@email.com,081234567015,Jakarta,Pusat,2022-07-16
+C016,Putri Aulia,putri.aulia@email.com,081234567016,Bandung,Bandung,2019-08-03
+C017,Rizky Maulana,rizky.maulana@email.com,081234567017,Jakarta,Selatan,2023-03-22
+C018,Sari Indrawati,sari.indrawati@email.com,081234567018,Surabaya,Surabaya,2020-06-11
+C019,Toni Hidayat,toni.hidayat@email.com,081234567019,Yogyakarta,Yogyakarta,2022-11-30
+C020,Umar Fauzi,umar.fauzi@email.com,081234567020,Jakarta,Pusat,2021-09-17

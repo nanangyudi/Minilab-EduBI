@@ -1,0 +1,31 @@
+review_id,author,rating,text,review_date,branch,source
+R001,Andi Saputra,5,Pelayanan sangat ramah dan cepat. Produk sesuai deskripsi.,2024-01-08,Pusat,google
+R002,Budi Santoso,4,Barang bagus tapi pengiriman agak lambat. Overall puas.,2024-01-10,Bandung,google
+R003,Citra Dewi,5,Toko terpercaya! Sudah belanja berkali-kali selalu memuaskan.,2024-01-12,Pusat,google
+R004,Dian Rahmawati,3,Produk oke tapi ada satu item yang cacat. CS langsung bantu return.,2024-01-15,Surabaya,google
+R005,Eka Prasetyo,5,Harga kompetitif dan kualitas premium. Rekomendasi banget!,2024-01-18,Selatan,google
+R006,Fajar Nugroho,4,Staf terlatih dan informatif. Membantu pilih laptop yang tepat.,2024-01-20,Bandung,google
+R007,Gita Lestari,2,Antrian panjang. Perlu ditingkatkan jumlah kasir.,2024-01-22,Surabaya,google
+R008,Hendra Wijaya,5,Pengalaman berbelanja yang menyenangkan. Akan kembali lagi.,2024-01-25,Pusat,google
+R009,Indah Permata,4,Toko bersih dan rapi. Produk lengkap dan tersedia.,2024-01-28,Yogyakarta,google
+R010,Joko Susilo,5,Proses pembelian mudah. Customer service responsif di WhatsApp.,2024-02-02,Selatan,google
+R011,Kartika Sari,3,Harga sedikit lebih mahal dari online. Tapi ada garansi resmi.,2024-02-05,Bandung,google
+R012,Lutfi Hakim,5,Laptop yang saya beli berfungsi sempurna. Sangat puas!,2024-02-08,Pusat,google
+R013,Maya Putri,4,Packing aman dan produk mulus. Terima kasih Minilab!,2024-02-10,Surabaya,google
+R014,Nanda Rizki,5,Staff sangat helpful dan sabar menjelaskan spesifikasi produk.,2024-02-13,Yogyakarta,google
+R015,Oki Firmansyah,4,Tersedia banyak pilihan merek. Mudah bandingkan harga di tempat.,2024-02-16,Pusat,google
+R016,Putri Aulia,5,Beli aksesoris di sini lebih murah dari marketplace. Suka!,2024-02-19,Bandung,google
+R017,Rizky Maulana,1,Barang tidak sesuai gambar. Minta refund susah. Kecewa.,2024-02-22,Selatan,google
+R018,Sari Indrawati,5,Promo Februari luar biasa! Dapat diskon 15% dan gratis tas laptop.,2024-02-25,Surabaya,google
+R019,Toni Hidayat,4,Toko nyaman dan AC dingin. Betah berlama-lama di sini.,2024-02-28,Yogyakarta,google
+R020,Umar Fauzi,5,SSD yang dibeli performa sangat baik. Harga terbaik se-Jakarta.,2024-03-03,Pusat,google
+R021,Andi Saputra,5,Monitor baru saya impresif! Warna akurat dan layar lebar.,2024-03-06,Pusat,google
+R022,Budi Santoso,5,ASUS ROG yang saya beli performanya gila. Puas banget beli di sini!,2024-03-25,Bandung,google
+R023,Citra Dewi,4,Laptop Dell cepat sampai. Kondisi mulus. Memuaskan.,2024-03-08,Pusat,google
+R024,Dian Rahmawati,3,Tokonya bagus tapi parkir sempit. Perlu perbaikan fasilitas.,2024-03-12,Surabaya,google
+R025,Eka Prasetyo,5,Dell Inspiron pilihan tepat untuk harganya. Thanks Minilab Selatan!,2024-03-08,Selatan,google
+R026,Fajar Nugroho,4,Beli RAM upgrade laptop jadi lebih kencang. Staff bantu instalasi.,2024-03-14,Bandung,google
+R027,Gita Lestari,5,Setelah komplain kemarin direspons cepat. Masalah terselesaikan.,2024-03-20,Surabaya,google
+R028,Hendra Wijaya,5,MacBook yang dibeli genuine dan bergaransi resmi Apple. Terpercaya!,2024-04-26,Pusat,google
+R029,Indah Permata,4,Toko selalu update stok produk terbaru. Informatif dan profesional.,2024-04-15,Yogyakarta,google
+R030,Joko Susilo,5,Program loyalitas Minilab sangat menguntungkan. Poin saya banyak!,2024-05-10,Selatan,google

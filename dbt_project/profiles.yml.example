@@ -1,0 +1,21 @@
+# profiles.yml.example
+# Salin file ini menjadi profiles.yml dan sesuaikan path DuckDB
+# JANGAN commit profiles.yml ke git (sudah ada di .gitignore)
+
+minilab_edubi:
+  target: dev
+  outputs:
+
+    # ─── Profil untuk development lokal ───
+    dev:
+      type: duckdb
+      path: ../data/warehouse/lab_bi.duckdb   # relatif dari folder dbt_project/
+      schema: main
+      threads: 1
+
+    # ─── Profil untuk Docker container ───
+    docker:
+      type: duckdb
+      path: /app/data/warehouse/lab_bi.duckdb  # path absolut di dalam container
+      schema: main
+      threads: 1

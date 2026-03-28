@@ -1,57 +1,74 @@
 """
 extract_odoo.py
-Ekstrak data dari Odoo via XML-RPC dan simpan ke data/raw/
+Ekstrak data dari simulasi Odoo (PostgreSQL schema odoo_sim)
+dan simpan ke data/raw/ sebagai CSV.
+
+Untuk PoC: membaca dari PG odoo_sim yang sudah di-seed oleh init_postgres.sql.
+Untuk koneksi Odoo asli: ganti implementasi fetch_* dengan XML-RPC.
 """
 
-import xmlrpc.client
 import pandas as pd
-import os
-from dotenv import load_dotenv
+from utils import get_pg_conn, get_logger
 
-load_dotenv()
-
-ODOO_URL = os.getenv("ODOO_URL", "http://localhost:8069")
-ODOO_DB = os.getenv("ODOO_DB", "odoo")
-ODOO_USER = os.getenv("ODOO_USER", "admin")
-ODOO_PASSWORD = os.getenv("ODOO_PASSWORD", "admin")
+log = get_logger("extract_odoo")
 
 OUTPUT_DIR = "data/raw"
 
 
-def authenticate():
-    common = xmlrpc.client.ServerProxy(f"{ODOO_URL}/xmlrpc/2/common")
-    uid = common.authenticate(ODOO_DB, ODOO_USER, ODOO_PASSWORD, {})
-    models = xmlrpc.client.ServerProxy(f"{ODOO_URL}/xmlrpc/2/object")
-    return uid, models
-
-
-def extract_sales_orders(uid, models):
-    records = models.execute_kw(
-        ODOO_DB, uid, ODOO_PASSWORD,
-        "sale.order", "search_read",
-        [[]],
-        {"fields": ["name", "partner_id", "date_order", "amount_total", "state"]}
+def extract_customers() -> pd.DataFrame:
+    """Ambil data customer dari odoo_sim.res_partner."""
+    conn = get_pg_conn(schema="odoo_sim")
+    df = pd.read_sql(
+        """
+        SELECT
+            'C' || LPAD(id::text, 3, '0')  AS customer_id,
+            name,
+            email,
+            phone,
+            city,
+            branch,
+            customer_since
+        FROM odoo_sim.res_partner
+        WHERE active = TRUE
+        ORDER BY id
+        """,
+        conn,
     )
-    df = pd.DataFrame(records)
-    df.to_csv(f"{OUTPUT_DIR}/sales_orders.csv", index=False)
-    print(f"Extracted {len(df)} sales orders.")
+    conn.close()
+    out = f"{OUTPUT_DIR}/odoo_customers.csv"
+    df.to_csv(out, index=False)
+    log.info(f"Extracted {len(df)} customers → {out}")
     return df
 
 
-def extract_customers(uid, models):
-    records = models.execute_kw(
-        ODOO_DB, uid, ODOO_PASSWORD,
-        "res.partner", "search_read",
-        [[["customer_rank", ">", 0]]],
-        {"fields": ["name", "email", "phone", "city", "country_id"]}
+def extract_sales() -> pd.DataFrame:
+    """Ambil data sales order dari odoo_sim.sale_order."""
+    conn = get_pg_conn(schema="odoo_sim")
+    df = pd.read_sql(
+        """
+        SELECT
+            so.name           AS order_id,
+            'C' || LPAD(so.partner_id::text, 3, '0') AS customer_id,
+            so.product_name,
+            so.category,
+            so.quantity,
+            so.unit_price,
+            so.amount_total   AS total_price,
+            so.date_order     AS order_date,
+            so.branch,
+            so.state          AS status
+        FROM odoo_sim.sale_order so
+        ORDER BY so.date_order
+        """,
+        conn,
     )
-    df = pd.DataFrame(records)
-    df.to_csv(f"{OUTPUT_DIR}/customers.csv", index=False)
-    print(f"Extracted {len(df)} customers.")
+    conn.close()
+    out = f"{OUTPUT_DIR}/odoo_sales.csv"
+    df.to_csv(out, index=False)
+    log.info(f"Extracted {len(df)} sales orders → {out}")
     return df
 
 
 if __name__ == "__main__":
-    uid, models = authenticate()
-    extract_sales_orders(uid, models)
-    extract_customers(uid, models)
+    extract_customers()
+    extract_sales()

@@ -1,33 +1,32 @@
 """
 init_duckdb.py
-Inisialisasi database DuckDB dan buat schema Medallion Architecture:
-- bronze: raw data
-- silver: cleaned data
-- gold:   BI-ready / aggregated data
+Inisialisasi database DuckDB:
+- Buat file DuckDB di data/warehouse/lab_bi.duckdb
+- Buat schema Bronze, Silver, Gold
 """
 
-import duckdb
-import os
+from utils import get_duckdb_conn, get_logger
 
-DB_PATH = "data/warehouse/lab_bi.duckdb"
+log = get_logger("init_duckdb")
 
 
 def init_database():
-    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-    con = duckdb.connect(DB_PATH)
+    log.info("Menginisialisasi DuckDB...")
+    con = get_duckdb_conn()
 
-    con.execute("CREATE SCHEMA IF NOT EXISTS bronze")
-    con.execute("CREATE SCHEMA IF NOT EXISTS silver")
-    con.execute("CREATE SCHEMA IF NOT EXISTS gold")
+    for schema in ("bronze", "silver", "gold"):
+        con.execute(f"CREATE SCHEMA IF NOT EXISTS {schema}")
+        log.info(f"  Schema '{schema}' siap.")
 
-    schemas = con.execute("SHOW ALL TABLES").fetchdf()
-    print("Database initialized.")
-    print(f"DB path: {os.path.abspath(DB_PATH)}")
-
-    existing = con.execute("SELECT schema_name FROM information_schema.schemata").fetchall()
-    print("Schemas:", [s[0] for s in existing])
-
+    schemas = [
+        row[0]
+        for row in con.execute(
+            "SELECT schema_name FROM information_schema.schemata"
+        ).fetchall()
+    ]
+    log.info(f"Schema aktif: {schemas}")
     con.close()
+    log.info("DuckDB berhasil diinisialisasi.")
 
 
 if __name__ == "__main__":

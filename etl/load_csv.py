@@ -1,37 +1,44 @@
 """
 load_csv.py
-Load file CSV dari data/raw ke tabel bronze di DuckDB.
+Load file CSV sample dari data/raw/ ke tabel bronze di DuckDB.
+File ini adalah sumber data utama untuk PoC (menggantikan koneksi Odoo langsung).
 """
 
-import duckdb
 import os
+from utils import get_duckdb_conn, get_logger
 
-DB_PATH = "data/warehouse/lab_bi.duckdb"
-RAW_DIR = "data/raw"
+log = get_logger("load_csv")
 
+RAW_DIR = os.getenv("RAW_DIR", "data/raw")
+
+# Mapping: nama file CSV → nama tabel bronze di DuckDB
 CSV_TABLE_MAP = {
-    "sales_orders.csv": "bronze.sales_orders",
-    "customers.csv": "bronze.customers",
-    "google_reviews.csv": "bronze.google_reviews",
+    "sample_sales.csv":     "bronze.sales",
+    "sample_customers.csv": "bronze.customers",
+    "sample_reviews.csv":   "bronze.reviews",
+    "sample_targets.csv":   "bronze.targets",
 }
 
 
-def load_csv_to_bronze():
-    con = duckdb.connect(DB_PATH)
+def load_all():
+    con = get_duckdb_conn()
     con.execute("CREATE SCHEMA IF NOT EXISTS bronze")
 
     for filename, table in CSV_TABLE_MAP.items():
         filepath = os.path.join(RAW_DIR, filename)
         if not os.path.exists(filepath):
-            print(f"Skipping {filename}: file not found.")
+            log.warning(f"File tidak ditemukan, skip: {filepath}")
             continue
 
-        con.execute(f"CREATE OR REPLACE TABLE {table} AS SELECT * FROM read_csv_auto('{filepath}')")
+        con.execute(
+            f"CREATE OR REPLACE TABLE {table} AS "
+            f"SELECT * FROM read_csv_auto('{filepath}', header=true)"
+        )
         count = con.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
-        print(f"Loaded {count} rows into {table}.")
+        log.info(f"Loaded {count:>4} baris → {table}")
 
     con.close()
 
 
 if __name__ == "__main__":
-    load_csv_to_bronze()
+    load_all()

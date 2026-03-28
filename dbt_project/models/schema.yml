@@ -1,0 +1,107 @@
+version: 2
+
+# ─────────────────────────────────────────────
+# Bronze Models
+# ─────────────────────────────────────────────
+models:
+  - name: bronze_sales
+    description: "Tabel bronze: raw data penjualan dari sumber"
+    columns:
+      - name: order_id
+        tests:
+          - not_null
+          - unique
+
+  - name: bronze_customers
+    description: "Tabel bronze: raw data customer dari sumber"
+    columns:
+      - name: customer_id
+        tests:
+          - not_null
+          - unique
+
+  - name: bronze_reviews
+    description: "Tabel bronze: raw data ulasan Google"
+    columns:
+      - name: review_id
+        tests:
+          - not_null
+          - unique
+
+  - name: bronze_targets
+    description: "Tabel bronze: raw data target penjualan"
+    columns:
+      - name: target_id
+        tests:
+          - not_null
+          - unique
+
+# ─────────────────────────────────────────────
+# Silver Models
+# ─────────────────────────────────────────────
+  - name: silver_sales
+    description: "Tabel silver: penjualan yang sudah dibersihkan dan dikastip"
+    columns:
+      - name: order_id
+        tests:
+          - not_null
+          - unique
+      - name: total_price
+        tests:
+          - not_null
+
+  - name: silver_customers
+    description: "Tabel silver: customer yang sudah dinormalisasi"
+    columns:
+      - name: customer_id
+        tests:
+          - not_null
+          - unique
+
+  - name: silver_reviews
+    description: "Tabel silver: ulasan yang sudah diparsing dan dikategorikan"
+    columns:
+      - name: review_id
+        tests:
+          - not_null
+          - unique
+      - name: rating
+        tests:
+          - not_null
+
+  - name: silver_targets
+    description: "Tabel silver: target bulanan per cabang"
+    columns:
+      - name: target_id
+        tests:
+          - not_null
+          - unique
+
+# ─────────────────────────────────────────────
+# Gold Models
+# ─────────────────────────────────────────────
+  - name: gold_sales_daily
+    description: "Agregasi penjualan harian per cabang"
+    columns:
+      - name: order_date
+        tests:
+          - not_null
+      - name: branch
+        tests:
+          - not_null
+
+  - name: gold_branch_kpi
+    description: "KPI per cabang: revenue, orders, rata-rata, pencapaian target"
+    columns:
+      - name: branch
+        tests:
+          - not_null
+          - unique
+
+  - name: gold_review_summary
+    description: "Ringkasan ulasan per cabang"
+    columns:
+      - name: branch
+        tests:
+          - not_null
+          - unique

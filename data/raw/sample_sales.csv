@@ -1,0 +1,51 @@
+order_id,customer_id,product_name,category,quantity,unit_price,total_price,order_date,branch,status
+SO001,C001,Laptop Acer Aspire 5,Elektronik,1,7500000,7500000,2024-01-05,Pusat,done
+SO002,C002,Mouse Wireless Logitech,Aksesoris,2,350000,700000,2024-01-07,Bandung,done
+SO003,C003,Monitor LG 24 inch,Elektronik,1,2800000,2800000,2024-01-10,Pusat,done
+SO004,C004,Keyboard Mechanical,Aksesoris,1,850000,850000,2024-01-12,Surabaya,done
+SO005,C005,Headset Sony,Aksesoris,1,1200000,1200000,2024-01-15,Selatan,done
+SO006,C006,Laptop Asus Vivobook,Elektronik,1,8200000,8200000,2024-01-18,Bandung,done
+SO007,C007,Webcam Logitech C920,Aksesoris,1,900000,900000,2024-01-20,Surabaya,done
+SO008,C008,SSD Samsung 1TB,Komponen,2,1100000,2200000,2024-01-22,Pusat,done
+SO009,C009,RAM DDR4 16GB,Komponen,1,650000,650000,2024-01-25,Yogyakarta,done
+SO010,C010,Printer Canon PIXMA,Elektronik,1,1500000,1500000,2024-01-28,Selatan,done
+SO011,C011,Laptop Lenovo IdeaPad,Elektronik,1,7000000,7000000,2024-02-02,Bandung,done
+SO012,C012,Speaker Bluetooth JBL,Aksesoris,1,750000,750000,2024-02-05,Pusat,done
+SO013,C013,Tablet Samsung Tab A8,Elektronik,1,3500000,3500000,2024-02-08,Surabaya,done
+SO014,C014,Flash Disk 128GB,Komponen,3,120000,360000,2024-02-10,Yogyakarta,done
+SO015,C015,Charger Laptop Universal,Aksesoris,1,280000,280000,2024-02-13,Pusat,done
+SO016,C001,Monitor Samsung 27 inch,Elektronik,1,3200000,3200000,2024-02-15,Pusat,done
+SO017,C016,Laptop HP Pavilion,Elektronik,1,6800000,6800000,2024-02-18,Bandung,done
+SO018,C017,Mouse Pad Gaming XL,Aksesoris,2,150000,300000,2024-02-20,Selatan,done
+SO019,C018,Printer Epson L3110,Elektronik,1,1800000,1800000,2024-02-22,Surabaya,done
+SO020,C019,Hub USB 7 Port,Aksesoris,1,320000,320000,2024-02-25,Yogyakarta,done
+SO021,C020,SSD NVMe 512GB,Komponen,1,850000,850000,2024-02-28,Pusat,done
+SO022,C003,Headphone Audio-Technica,Aksesoris,1,1450000,1450000,2024-03-03,Pusat,done
+SO023,C005,Laptop Dell Inspiron,Elektronik,1,9500000,9500000,2024-03-06,Selatan,done
+SO024,C007,Keyboard Wireless Apple,Aksesoris,1,1200000,1200000,2024-03-08,Surabaya,done
+SO025,C009,Laptop MSI Modern,Elektronik,1,10500000,10500000,2024-03-11,Yogyakarta,done
+SO026,C011,RAM DDR4 32GB,Komponen,2,1200000,2400000,2024-03-14,Bandung,done
+SO027,C013,Webcam Razer Kiyo,Aksesoris,1,1100000,1100000,2024-03-17,Surabaya,done
+SO028,C015,Monitor BenQ 24 inch,Elektronik,1,2600000,2600000,2024-03-20,Pusat,done
+SO029,C002,Laptop ASUS ROG,Elektronik,1,15000000,15000000,2024-03-22,Bandung,done
+SO030,C004,Speaker Edifier,Aksesoris,1,680000,680000,2024-03-25,Surabaya,done
+SO031,C006,SSD External WD 1TB,Komponen,1,950000,950000,2024-04-01,Bandung,done
+SO032,C008,Laptop Acer Nitro,Elektronik,1,12000000,12000000,2024-04-03,Pusat,done
+SO033,C010,Mouse Razer DeathAdder,Aksesoris,1,750000,750000,2024-04-06,Selatan,done
+SO034,C012,Tablet iPad Mini,Elektronik,1,8500000,8500000,2024-04-09,Pusat,done
+SO035,C014,Power Bank 20000mAh,Aksesoris,1,450000,450000,2024-04-12,Yogyakarta,done
+SO036,C016,Laptop Lenovo ThinkPad,Elektronik,1,13500000,13500000,2024-04-15,Bandung,done
+SO037,C018,Keyboard Keychron K2,Aksesoris,1,1350000,1350000,2024-04-18,Surabaya,done
+SO038,C020,Monitor LG UltraWide,Elektronik,1,4800000,4800000,2024-04-21,Pusat,done
+SO039,C001,Laptop MacBook Air M2,Elektronik,1,18000000,18000000,2024-04-24,Pusat,done
+SO040,C003,Webcam Sony ZV-1,Elektronik,1,7500000,7500000,2024-04-27,Pusat,done
+SO041,C005,SSD Samsung 2TB,Komponen,1,1900000,1900000,2024-05-02,Selatan,done
+SO042,C007,Printer HP LaserJet,Elektronik,1,2200000,2200000,2024-05-05,Surabaya,done
+SO043,C009,Mouse Logitech MX Master,Aksesoris,1,1100000,1100000,2024-05-08,Yogyakarta,done
+SO044,C011,Laptop ASUS ZenBook,Elektronik,1,11000000,11000000,2024-05-11,Bandung,done
+SO045,C013,Hub Thunderbolt 4,Aksesoris,1,850000,850000,2024-05-14,Surabaya,done
+SO046,C015,RAM DDR5 16GB,Komponen,2,950000,1900000,2024-05-17,Pusat,done
+SO047,C017,Monitor AOC 27 inch,Elektronik,1,3100000,3100000,2024-05-20,Selatan,done
+SO048,C019,Keyboard Logitech K380,Aksesoris,1,480000,480000,2024-05-23,Yogyakarta,done
+SO049,C002,Laptop Lenovo Legion,Elektronik,1,16500000,16500000,2024-05-26,Bandung,done
+SO050,C004,Cooling Pad Laptop,Aksesoris,1,250000,250000,2024-05-29,Surabaya,done

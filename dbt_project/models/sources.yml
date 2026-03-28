@@ -1,0 +1,82 @@
+version: 2
+
+sources:
+  - name: bronze
+    description: "Raw data yang dimuat oleh ETL Python ke DuckDB schema bronze"
+    schema: bronze
+    tables:
+      - name: sales
+        description: "Data transaksi penjualan dari sample CSV / Odoo"
+        columns:
+          - name: order_id
+            description: "ID unik transaksi"
+          - name: customer_id
+            description: "ID customer"
+          - name: product_name
+            description: "Nama produk"
+          - name: category
+            description: "Kategori produk"
+          - name: quantity
+            description: "Jumlah unit"
+          - name: unit_price
+            description: "Harga satuan"
+          - name: total_price
+            description: "Total harga (quantity * unit_price)"
+          - name: order_date
+            description: "Tanggal order"
+          - name: branch
+            description: "Nama cabang"
+          - name: status
+            description: "Status order"
+
+      - name: customers
+        description: "Data master customer"
+        columns:
+          - name: customer_id
+            description: "ID unik customer"
+          - name: name
+            description: "Nama lengkap customer"
+          - name: email
+            description: "Alamat email"
+          - name: phone
+            description: "Nomor telepon"
+          - name: city
+            description: "Kota domisili"
+          - name: branch
+            description: "Cabang terkait"
+          - name: customer_since
+            description: "Tanggal pertama kali menjadi customer"
+
+      - name: reviews
+        description: "Data ulasan pelanggan dari Google Reviews"
+        columns:
+          - name: review_id
+            description: "ID unik review"
+          - name: author
+            description: "Nama penulis review"
+          - name: rating
+            description: "Rating bintang (1-5)"
+          - name: text
+            description: "Isi teks ulasan"
+          - name: review_date
+            description: "Tanggal review ditulis"
+          - name: branch
+            description: "Cabang yang direview"
+          - name: source
+            description: "Platform sumber review"
+
+      - name: targets
+        description: "Target penjualan bulanan per cabang"
+        columns:
+          - name: target_id
+            description: "ID unik target"
+          - name: branch
+            description: "Nama cabang"
+          - name: month
+            description: "Bulan (1-12)"
+          - name: year
+            description: "Tahun"
+          - name: sales_target
+            description: "Target total revenue (Rp)"
+          - name: order_target
+            description: "Target jumlah transaksi"

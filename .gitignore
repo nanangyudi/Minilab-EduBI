@@ -1,4 +1,4 @@
-# Python
+# ─── Python ───────────────────────────────────
 __pycache__/
 *.py[cod]
 *.egg-info/
@@ -9,18 +9,24 @@ venv/
 env/
 .env
 
-# Jupyter
+# ─── Jupyter ──────────────────────────────────
 .ipynb_checkpoints/
 
-# DuckDB
+# ─── DuckDB (file database, jangan commit) ────
 data/warehouse/*.duckdb
 
-# dbt
+# ─── dbt ──────────────────────────────────────
 dbt_project/target/
 dbt_project/dbt_packages/
 dbt_project/logs/
 dbt_project/.user.yml
+dbt_project/profiles.yml
 
-# OS
+# ─── OS ───────────────────────────────────────
 .DS_Store
 Thumbs.db
+
+# ─── Data mentah hasil extract ────────────────
+data/raw/odoo_*.csv
+data/raw/google_reviews.csv
+data/processed/
