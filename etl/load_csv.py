@@ -1,8 +1,18 @@
 """
 load_csv.py
-Load file CSV sample dari data/raw/ ke tabel bronze di ClickHouse.
-Semua kolom disimpan sebagai String di layer Bronze (raw data).
-Casting ke tipe yang tepat dilakukan di layer Silver oleh dbt.
+Load file CSV dari data/raw/ ke tabel bronze di ClickHouse.
+
+Prioritas sumber per tabel:
+  bronze.customers → odoo_customers.csv (hasil extract Odoo)
+                     fallback: sample_customers.csv
+  bronze.sales     → odoo_sales.csv     (hasil extract Odoo)
+                     fallback: sample_sales.csv
+  bronze.reviews   → google_reviews.csv (hasil extract Google API)
+                     fallback: sample_reviews.csv
+  bronze.targets   → sample_targets.csv (selalu pakai sample)
+
+Semua kolom disimpan sebagai String di Bronze (raw data).
+Casting ke tipe yang tepat dilakukan di Silver oleh dbt.
 """
 
 import os
@@ -13,8 +23,7 @@ log = get_logger("load_csv")
 
 RAW_DIR = os.getenv("RAW_DIR", "data/raw")
 
-# DDL untuk setiap tabel bronze di ClickHouse
-# Semua kolom String — Silver layer yang melakukan casting
+# DDL tabel bronze — semua kolom String (raw layer)
 TABLES_DDL = {
     "bronze.sales": """
         CREATE TABLE IF NOT EXISTS bronze.sales (
@@ -68,38 +77,48 @@ TABLES_DDL = {
     """,
 }
 
-# Mapping: nama file CSV → nama tabel bronze
-CSV_TABLE_MAP = {
-    "sample_sales.csv":     "bronze.sales",
-    "sample_customers.csv": "bronze.customers",
-    "sample_reviews.csv":   "bronze.reviews",
-    "sample_targets.csv":   "bronze.targets",
+# Sumber file per tabel: (file_prioritas, file_fallback)
+# Jika file_prioritas ada → gunakan itu; jika tidak → gunakan fallback
+TABLE_SOURCES = {
+    "bronze.customers": ("odoo_customers.csv", "sample_customers.csv"),
+    "bronze.sales":     ("odoo_sales.csv",      "sample_sales.csv"),
+    "bronze.reviews":   ("google_reviews.csv",  "sample_reviews.csv"),
+    "bronze.targets":   (None,                  "sample_targets.csv"),
 }
+
+
+def _resolve_source(table: str) -> tuple[str, str]:
+    """Return (filepath, label) untuk tabel yang diberikan."""
+    primary, fallback = TABLE_SOURCES[table]
+
+    if primary:
+        primary_path = os.path.join(RAW_DIR, primary)
+        if os.path.exists(primary_path):
+            return primary_path, f"[extracted] {primary}"
+
+    fallback_path = os.path.join(RAW_DIR, fallback)
+    return fallback_path, f"[sample]    {fallback}"
 
 
 def load_all():
     client = get_ch_client()
 
+    # Pastikan semua tabel bronze sudah ada
     for table, ddl in TABLES_DDL.items():
         client.command(ddl)
 
-    for filename, table in CSV_TABLE_MAP.items():
-        filepath = os.path.join(RAW_DIR, filename)
+    for table in TABLE_SOURCES:
+        filepath, label = _resolve_source(table)
+
         if not os.path.exists(filepath):
-            log.warning(f"File tidak ditemukan, skip: {filepath}")
+            log.warning(f"  Tidak ada file untuk {table}, skip.")
             continue
 
-        df = pd.read_csv(filepath, dtype=str)  # baca semua sebagai string (bronze = raw)
-        df = df.fillna("")                      # ganti NaN dengan string kosong
+        df = pd.read_csv(filepath, dtype=str).fillna("")
 
-        # Hapus data lama lalu insert ulang (idempotent)
-        db, tbl = table.split(".")
+        # Truncate lalu insert (idempotent)
         client.command(f"TRUNCATE TABLE IF EXISTS {table}")
         client.insert_df(table, df)
 
         count = client.query(f"SELECT count() FROM {table}").result_rows[0][0]
-        log.info(f"Loaded {count:>4} baris → {table}")
-
-
-if __name__ == "__main__":
-    load_all()
+        log.info(f"  {count:>4} baris → {table:<22} ← {label}")

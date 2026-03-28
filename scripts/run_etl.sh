@@ -19,4 +19,6 @@ echo "[1/1] Menjalankan run_pipeline.py..."
 python etl/run_pipeline.py
 
 echo ""
-echo "ETL selesai. File DuckDB tersedia di: data/warehouse/lab_bi.duckdb"
+echo "ETL selesai."
+echo "  Bronze layer sudah terisi di ClickHouse (bronze.*)."
+echo "  Jalankan 'docker compose run --rm dbt' untuk tahap Transform (Silver + Gold)."

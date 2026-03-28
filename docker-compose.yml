@@ -93,7 +93,7 @@ services:
       RAW_DIR:             /app/data/raw
       USE_POSTGRES_SOURCE: ${USE_POSTGRES_SOURCE:-false}
     volumes:
-      - ./data/raw:/app/data/raw:ro
+      - ./data/raw:/app/data/raw
 
   # ─────────────────────────────────────────────────────────
   # dbt: transformasi Bronze → Silver → Gold di ClickHouse
@@ -108,9 +108,25 @@ services:
     command: >
       sh -c "
         cp profiles.yml.example profiles.yml &&
-        dbt deps    --profiles-dir . --target docker &&
-        dbt run     --profiles-dir . --target docker &&
-        dbt test    --profiles-dir . --target docker
+        dbt deps --profiles-dir . --target docker &&
+
+        echo '' &&
+        echo '┌─────────────────────────────────────────────┐' &&
+        echo '│  TAHAP 3 — Transform ke Silver (ClickHouse)  │' &&
+        echo '└─────────────────────────────────────────────┘' &&
+        dbt run --select path:models/silver --profiles-dir . --target docker &&
+
+        echo '' &&
+        echo '┌─────────────────────────────────────────────┐' &&
+        echo '│  TAHAP 4 — Transform ke Gold (ClickHouse)    │' &&
+        echo '└─────────────────────────────────────────────┘' &&
+        dbt run --select path:models/gold --profiles-dir . --target docker &&
+
+        echo '' &&
+        echo '┌─────────────────────────────────────────────┐' &&
+        echo '│  Validasi dbt Tests                          │' &&
+        echo '└─────────────────────────────────────────────┘' &&
+        dbt test --profiles-dir . --target docker
       "
     depends_on:
       clickhouse:
