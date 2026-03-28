@@ -14,8 +14,8 @@ from utils import get_logger
 
 log = get_logger("extract_google_reviews")
 
-OUTPUT_DIR = "data/raw"
-SAMPLE_FILE = os.path.join(OUTPUT_DIR, "sample_reviews.csv")
+RAW_DIR     = os.getenv("RAW_DIR", "data/raw")
+SAMPLE_FILE = os.path.join(RAW_DIR, "sample_reviews.csv")
 
 
 def fetch_from_api(place_id: str, api_key: str) -> pd.DataFrame:
@@ -53,7 +53,7 @@ def extract_reviews() -> pd.DataFrame:
     if api_key and place_id:
         log.info("Menggunakan Google Places API...")
         df = fetch_from_api(place_id, api_key)
-        out = os.path.join(OUTPUT_DIR, "google_reviews.csv")
+        out = os.path.join(RAW_DIR, "google_reviews.csv")
         df.to_csv(out, index=False)
         log.info(f"Extracted {len(df)} reviews → {out}")
     else:
