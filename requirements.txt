@@ -1,0 +1,8 @@
+duckdb==0.10.3
+dbt-core==1.8.0
+dbt-duckdb==1.8.0
+pandas==2.2.2
+jupyter==1.0.0
+notebook==7.2.0
+requests==2.32.3
+python-dotenv==1.0.1
