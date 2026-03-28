@@ -13,20 +13,24 @@
 
 SELECT
     target_id,
-    trimBoth(branch)                            AS branch,
-    toInt32(month)                              AS month,
-    toInt32(year)                               AS year,
-    CAST(sales_target AS Decimal(14,2))         AS sales_target,
-    toInt32(order_target)                       AS order_target,
+    trimBoth(branch)                                        AS branch,
+    toInt32OrZero(trimBoth(month))                          AS month,
+    toInt32OrZero(trimBoth(year))                           AS year,
+    toDecimal64OrZero(trimBoth(sales_target), 2)            AS sales_target,
+    toInt32OrZero(trimBoth(order_target))                   AS order_target,
 
     -- Label periode: "Jan 2024", "Feb 2024", dll
     formatDateTime(
-        makeDate(toInt32(year), toInt32(month), 1),
+        makeDate(
+            toInt32OrZero(trimBoth(year)),
+            toInt32OrZero(trimBoth(month)),
+            1
+        ),
         '%b %Y'
-    )                                           AS period_label
+    )                                                       AS period_label
 
 FROM {{ ref('bronze_targets') }}
 WHERE
     target_id    IS NOT NULL AND target_id != ''
     AND sales_target IS NOT NULL AND sales_target != ''
-    AND toFloat64(sales_target) > 0
+    AND toFloat64OrZero(trimBoth(sales_target)) > 0
