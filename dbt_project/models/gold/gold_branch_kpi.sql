@@ -66,4 +66,3 @@ SELECT
 FROM sales_summary s
 LEFT JOIN target_summary t ON s.branch = t.branch
 LEFT JOIN review_summary r ON s.branch = r.branch
-ORDER BY total_revenue DESC
