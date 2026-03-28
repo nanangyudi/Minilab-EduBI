@@ -30,6 +30,12 @@ dbt deps --profiles-dir .
 
 echo ""
 echo "┌─────────────────────────────────────────────┐"
+echo "│  Bronze dbt models (mirror sumber ETL)       │"
+echo "└─────────────────────────────────────────────┘"
+dbt run --select path:models/bronze --profiles-dir .
+
+echo ""
+echo "┌─────────────────────────────────────────────┐"
 echo "│  TAHAP 3 — Transform ke Silver (ClickHouse)  │"
 echo "└─────────────────────────────────────────────┘"
 dbt run --select path:models/silver --profiles-dir .
