@@ -1,28 +1,30 @@
 -- silver_customers.sql
 -- Silver layer: bersihkan dan standarisasi data customer
 -- Transformasi:
---   - Trim whitespace
+--   - Trim whitespace, lowercase email
 --   - Cast tanggal
---   - Tambah kolom customer_age_years (lama menjadi customer)
+--   - Tambah kolom customer_age_years
 
-{{ config(materialized='table', schema='silver') }}
+{{ config(
+    materialized = 'table',
+    schema       = 'silver',
+    engine       = 'MergeTree()',
+    order_by     = 'customer_id'
+) }}
 
 SELECT
     customer_id,
-    TRIM(name)                                   AS name,
-    LOWER(TRIM(email))                           AS email,
-    TRIM(phone)                                  AS phone,
-    TRIM(city)                                   AS city,
-    TRIM(branch)                                 AS branch,
-    CAST(customer_since AS DATE)                 AS customer_since,
+    trimBoth(name)                                   AS name,
+    lower(trimBoth(email))                           AS email,
+    trimBoth(phone)                                  AS phone,
+    trimBoth(city)                                   AS city,
+    trimBoth(branch)                                 AS branch,
+    toDate(customer_since)                           AS customer_since,
 
     -- Hitung berapa tahun sudah menjadi customer
-    DATE_DIFF('year',
-        CAST(customer_since AS DATE),
-        CURRENT_DATE
-    )                                            AS customer_age_years
+    dateDiff('year', toDate(customer_since), today()) AS customer_age_years
 
 FROM {{ ref('bronze_customers') }}
 WHERE
-    customer_id IS NOT NULL
-    AND name IS NOT NULL
+    customer_id IS NOT NULL AND customer_id != ''
+    AND name    IS NOT NULL AND name != ''

@@ -2,7 +2,7 @@
 
 ## Gambaran Umum
 
-Minilab EduBI menerapkan **Medallion Architecture** (Bronze → Silver → Gold) dengan stack teknologi ringan yang cocok dijalankan di laptop mahasiswa.
+Minilab EduBI menerapkan **Medallion Architecture** (Bronze → Silver → Gold) dengan ClickHouse sebagai Data Warehouse utama yang mendukung koneksi network, sehingga Metabase dapat terhubung langsung.
 
 ## Diagram Arsitektur
 
@@ -15,7 +15,6 @@ Minilab EduBI menerapkan **Medallion Architecture** (Bronze → Silver → Gold)
 │  │  (sample data)│  │  (odoo_sim schema)│  │  (atau CSV fallback)│  │
 │  └───────┬───────┘  └────────┬─────────┘  └──────────┬──────────┘  │
 └──────────┼────────────────────┼────────────────────────┼────────────┘
-           │                    │                        │
            └────────────────────┴────────────────────────┘
                                 │
                      ┌──────────▼──────────┐
@@ -24,10 +23,11 @@ Minilab EduBI menerapkan **Medallion Architecture** (Bronze → Silver → Gold)
                      └──────────┬──────────┘
                                 │
 ┌───────────────────────────────▼─────────────────────────────────────┐
-│                        DuckDB (lab_bi.duckdb)                        │
+│                   ClickHouse — Data Warehouse                        │
 │                                                                     │
 │  ┌──────────────┐    ┌──────────────┐    ┌──────────────────────┐  │
 │  │   BRONZE     │    │   SILVER     │    │        GOLD          │  │
+│  │  (database)  │    │  (database)  │    │     (database)       │  │
 │  │              │    │              │    │                      │  │
 │  │ bronze.sales │───▶│ silver.sales │───▶│ gold.sales_daily     │  │
 │  │ bronze.      │    │ silver.      │    │ gold.branch_kpi      │  │
@@ -41,19 +41,9 @@ Minilab EduBI menerapkan **Medallion Architecture** (Bronze → Silver → Gold)
 └───────────────────────────────────────────────────────────────────-─┘
                                                        │
                                     ┌──────────────────▼──────────┐
-                                    │  export_gold_to_postgres.py │
-                                    └──────────────────┬──────────┘
-                                                       │
-                                    ┌──────────────────▼──────────┐
-                                    │ PostgreSQL analytics schema  │
-                                    │  analytics.gold_sales_daily  │
-                                    │  analytics.gold_branch_kpi   │
-                                    │  analytics.gold_review_...   │
-                                    └──────────────────┬──────────┘
-                                                       │
-                                    ┌──────────────────▼──────────┐
                                     │         METABASE             │
-                                    │   Dashboard & Visualisasi    │
+                                    │   Terhubung langsung ke      │
+                                    │   ClickHouse gold database   │
                                     │   http://localhost:3000      │
                                     └─────────────────────────────┘
 ```
@@ -61,41 +51,52 @@ Minilab EduBI menerapkan **Medallion Architecture** (Bronze → Silver → Gold)
 ## Layer Penjelasan
 
 ### Bronze — Raw Data
-- Data masuk apa adanya, **tanpa transformasi**
+- Data masuk **apa adanya**, tanpa transformasi
+- Semua kolom bertipe `String` (raw)
 - Dibuat oleh: `etl/run_pipeline.py` → `etl/load_csv.py`
-- Tabel: `bronze.sales`, `bronze.customers`, `bronze.reviews`, `bronze.targets`
-- Format: sesuai file CSV source
+- Database ClickHouse: `bronze`
 
 ### Silver — Cleaned Data
-- Data sudah **dibersihkan**: tipe data benar, null ditangani, duplikat dihapus
+- Data sudah **dibersihkan**: casting tipe, null ditangani, normalisasi
 - Tambah kolom turunan: `order_year`, `order_month`, `sentiment`, `revenue_category`
 - Dibuat oleh: `dbt run` → model di `dbt_project/models/silver/`
-- Tabel: `silver.silver_*`
+- Database ClickHouse: `silver`
 
 ### Gold — BI-Ready Data
 - Data sudah **diagregasi** dan siap untuk dashboard
 - Metrik bisnis: KPI, daily revenue, review summary
 - Dibuat oleh: `dbt run` → model di `dbt_project/models/gold/`
-- Tabel: `gold.gold_sales_daily`, `gold.gold_branch_kpi`, `gold.gold_review_summary`
-- Diekspor ke PostgreSQL schema `analytics` agar bisa dibaca Metabase
+- Database ClickHouse: `gold`
+- **Metabase connect langsung ke sini**
 
 ## Stack Teknologi
 
-| Komponen    | Tool                  | Peran                                            |
-|-------------|-----------------------|--------------------------------------------------|
-| Storage     | DuckDB 1.1.3          | Embedded database untuk Bronze/Silver/Gold        |
-| ETL         | Python + pandas       | Load CSV dan extract dari sumber ke bronze        |
-| Transformasi| dbt Core + dbt-duckdb | SQL transformasi Bronze → Silver → Gold          |
-| Visualisasi | Metabase              | Dashboard interaktif untuk demo BI               |
-| Source DB   | PostgreSQL 15         | Simulasi Odoo ERP + analytics bridge Metabase    |
-| Runtime     | Docker Compose        | Orchestrasi semua service secara lokal           |
+| Komponen    | Tool                   | Peran                                             |
+|-------------|------------------------|---------------------------------------------------|
+| Data Warehouse | ClickHouse 24.3     | Database kolumnar, mendukung koneksi network      |
+| ETL         | Python + pandas        | Load CSV dan extract dari sumber ke bronze        |
+| Transformasi| dbt Core + dbt-clickhouse | SQL transformasi Bronze → Silver → Gold        |
+| Visualisasi | Metabase               | Dashboard interaktif, connect ke ClickHouse       |
+| Source DB   | PostgreSQL 15          | Simulasi Odoo ERP (odoo_sim schema)               |
+| Runtime     | Docker Compose         | Orchestrasi semua service secara lokal            |
 
 ## Keputusan Teknis
 
-### Mengapa DuckDB tidak langsung ke Metabase?
-DuckDB adalah **embedded database** (file-based), tidak mendukung koneksi network seperti PostgreSQL atau MySQL. Metabase memerlukan koneksi JDBC/network, sehingga DuckDB tidak bisa dijadikan data source Metabase secara langsung.
+### Mengapa ClickHouse (bukan DuckDB)?
 
-**Solusi**: Hasil Gold diekspor ke schema `analytics` di PostgreSQL. Metabase membaca dari sini.
+| Aspek | DuckDB | ClickHouse |
+|---|---|---|
+| Tipe | Embedded (file-based) | Client-server |
+| Koneksi network | ✗ Tidak bisa | ✓ Bisa (port 8123) |
+| Metabase connect langsung | ✗ Tidak | ✓ Ya |
+| Performa OLAP | Sangat baik | Sangat baik |
+| Setup Docker | Rumit (shared file) | Mudah (service biasa) |
 
-### Mengapa satu PostgreSQL untuk dua tujuan?
-Untuk PoC mahasiswa, memiliki satu PostgreSQL dengan dua schema (`odoo_sim` dan `analytics`) lebih sederhana dan menghemat resource dibanding dua container terpisah.
+ClickHouse dipilih karena **Metabase dapat connect langsung** ke database Gold tanpa perlu jembatan export, sehingga arsitektur lebih sederhana dan mudah dipahami mahasiswa.
+
+### Peran PostgreSQL
+PostgreSQL hanya digunakan untuk:
+1. Simulasi sumber data Odoo (`odoo_sim` schema)
+2. Menyimpan metadata internal Metabase
+
+PostgreSQL **bukan** bagian dari Data Warehouse.

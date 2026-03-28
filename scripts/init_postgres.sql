@@ -1,27 +1,23 @@
 -- =============================================================
 -- init_postgres.sql
 -- Inisialisasi PostgreSQL untuk Minilab EduBI
--- Membuat dua schema:
---   odoo_sim  = simulasi sumber data ERP (dibaca oleh ETL)
---   analytics = export hasil Gold dari DuckDB (dibaca Metabase)
+-- Hanya untuk schema odoo_sim (simulasi sumber data ERP)
+-- Data Warehouse sesungguhnya ada di ClickHouse
 -- =============================================================
 
--- ----------------------
--- Schema odoo_sim
--- ----------------------
 CREATE SCHEMA IF NOT EXISTS odoo_sim;
 
 -- Tabel simulasi customer dari Odoo
 CREATE TABLE IF NOT EXISTS odoo_sim.res_partner (
-    id          SERIAL PRIMARY KEY,
-    name        VARCHAR(100) NOT NULL,
-    email       VARCHAR(100),
-    phone       VARCHAR(20),
-    city        VARCHAR(50),
-    branch      VARCHAR(50),
-    customer_since DATE,
-    active      BOOLEAN DEFAULT TRUE,
-    created_at  TIMESTAMP DEFAULT NOW()
+    id              SERIAL PRIMARY KEY,
+    name            VARCHAR(100) NOT NULL,
+    email           VARCHAR(100),
+    phone           VARCHAR(20),
+    city            VARCHAR(50),
+    branch          VARCHAR(50),
+    customer_since  DATE,
+    active          BOOLEAN DEFAULT TRUE,
+    created_at      TIMESTAMP DEFAULT NOW()
 );
 
 -- Tabel simulasi sales order dari Odoo
@@ -40,9 +36,7 @@ CREATE TABLE IF NOT EXISTS odoo_sim.sale_order (
     created_at      TIMESTAMP DEFAULT NOW()
 );
 
--- ----------------------
--- Seed data odoo_sim
--- ----------------------
+-- Seed data
 INSERT INTO odoo_sim.res_partner (name, email, phone, city, branch, customer_since) VALUES
 ('Andi Saputra',    'andi.saputra@email.com',    '081234567001', 'Jakarta',    'Pusat',      '2021-03-15'),
 ('Budi Santoso',    'budi.santoso@email.com',    '081234567002', 'Bandung',    'Bandung',    '2020-07-22'),
@@ -69,11 +63,4 @@ INSERT INTO odoo_sim.sale_order (name, partner_id, product_name, category, quant
 ('SO010',10, 'Printer Canon PIXMA',     'Elektronik', 1, 1500000,  1500000,  '2024-01-28', 'Selatan',    'done')
 ON CONFLICT DO NOTHING;
 
--- ----------------------
--- Schema analytics
--- (diisi oleh export_gold_to_postgres.py)
--- ----------------------
-CREATE SCHEMA IF NOT EXISTS analytics;
-
-COMMENT ON SCHEMA odoo_sim  IS 'Simulasi sumber data ERP Odoo';
-COMMENT ON SCHEMA analytics IS 'Export hasil Gold layer DuckDB untuk Metabase';
+COMMENT ON SCHEMA odoo_sim IS 'Simulasi sumber data ERP Odoo (Data Warehouse ada di ClickHouse)';

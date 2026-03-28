@@ -1,16 +1,17 @@
 # docker-compose.yml
 # Minilab EduBI — Deployment Lokal
 #
-# Services:
-#   postgres  — Database PostgreSQL (source odoo_sim + analytics untuk Metabase)
-#   app       — ETL Python (jalankan sekali: docker compose run app)
-#   dbt       — dbt transformations (jalankan sekali: docker compose run dbt)
-#   metabase  — Dashboard BI (jalan terus di background)
+# Arsitektur:
+#   postgres    — Simulasi sumber ERP (odoo_sim) + metadata Metabase
+#   clickhouse  — Data Warehouse: Bronze, Silver, Gold
+#   app         — ETL Python (jalankan sekali: docker compose run app)
+#   dbt         — Transformasi dbt (jalankan sekali: docker compose run dbt)
+#   metabase    — Dashboard BI — connect ke ClickHouse (http://localhost:3000)
 #
 # Urutan penggunaan:
-#   1. docker compose up -d postgres
-#   2. docker compose run app
-#   3. docker compose run dbt
+#   1. docker compose up -d postgres clickhouse
+#   2. docker compose run --rm app
+#   3. docker compose run --rm dbt
 #   4. docker compose up -d metabase
 
 version: "3.9"
@@ -18,7 +19,7 @@ version: "3.9"
 services:
 
   # ─────────────────────────────────────────────────────────
-  # PostgreSQL: simulasi Odoo ERP + analytics untuk Metabase
+  # PostgreSQL: simulasi Odoo ERP + metadata internal Metabase
   # ─────────────────────────────────────────────────────────
   postgres:
     image: postgres:15-alpine
@@ -40,66 +41,94 @@ services:
       retries: 5
 
   # ─────────────────────────────────────────────────────────
-  # App / ETL: jalankan pipeline ETL Python
-  # Akses: docker compose run app
+  # ClickHouse: Data Warehouse (Bronze / Silver / Gold)
+  # HTTP interface: localhost:8123
+  # ─────────────────────────────────────────────────────────
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.3
+    container_name: minilab_clickhouse
+    restart: unless-stopped
+    ports:
+      - "8123:8123"   # HTTP interface (digunakan ETL, dbt, Metabase)
+      - "9000:9000"   # Native interface (opsional)
+    environment:
+      CLICKHOUSE_DB:                      default
+      CLICKHOUSE_USER:                    ${CH_USER:-default}
+      CLICKHOUSE_PASSWORD:                ${CH_PASSWORD:-}
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8123/ping | grep -q Ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─────────────────────────────────────────────────────────
+  # App / ETL: load CSV sample → ClickHouse bronze
+  # Akses: docker compose run --rm app
   # ─────────────────────────────────────────────────────────
   app:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: minilab_app
     working_dir: /app/etl
     command: python run_pipeline.py
     depends_on:
       postgres:
         condition: service_healthy
+      clickhouse:
+        condition: service_healthy
     environment:
-      PG_HOST:              postgres
-      PG_PORT:              "5432"
-      PG_DB:                ${PG_DB:-minilab}
-      PG_USER:              ${PG_USER:-minilab}
-      PG_PASSWORD:          ${PG_PASSWORD:-minilab123}
-      DUCKDB_PATH:          /app/data/warehouse/lab_bi.duckdb
-      RAW_DIR:              /app/data/raw
-      USE_POSTGRES_SOURCE:  ${USE_POSTGRES_SOURCE:-false}
+      CH_HOST:             clickhouse
+      CH_PORT:             "8123"
+      CH_USER:             ${CH_USER:-default}
+      CH_PASSWORD:         ${CH_PASSWORD:-}
+      PG_HOST:             postgres
+      PG_PORT:             "5432"
+      PG_DB:               ${PG_DB:-minilab}
+      PG_USER:             ${PG_USER:-minilab}
+      PG_PASSWORD:         ${PG_PASSWORD:-minilab123}
+      RAW_DIR:             /app/data/raw
+      USE_POSTGRES_SOURCE: ${USE_POSTGRES_SOURCE:-false}
     volumes:
-      - duckdb_data:/app/data/warehouse
       - ./data/raw:/app/data/raw:ro
 
   # ─────────────────────────────────────────────────────────
-  # dbt: jalankan transformasi Bronze → Silver → Gold
-  # Akses: docker compose run dbt
+  # dbt: transformasi Bronze → Silver → Gold di ClickHouse
+  # Akses: docker compose run --rm dbt
   # ─────────────────────────────────────────────────────────
   dbt:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: minilab_dbt
     working_dir: /app/dbt_project
     command: >
       sh -c "
         cp profiles.yml.example profiles.yml &&
-        sed -i 's|../data/warehouse/lab_bi.duckdb|/app/data/warehouse/lab_bi.duckdb|g' profiles.yml &&
-        dbt deps --profiles-dir . &&
-        dbt run  --profiles-dir . &&
-        dbt test --profiles-dir . &&
-        cd /app && python scripts/export_gold_to_postgres.py
+        dbt deps    --profiles-dir . --target docker &&
+        dbt run     --profiles-dir . --target docker &&
+        dbt test    --profiles-dir . --target docker
       "
     depends_on:
-      postgres:
+      clickhouse:
         condition: service_healthy
     environment:
-      PG_HOST:     postgres
-      PG_PORT:     "5432"
-      PG_DB:       ${PG_DB:-minilab}
-      PG_USER:     ${PG_USER:-minilab}
-      PG_PASSWORD: ${PG_PASSWORD:-minilab123}
-      DUCKDB_PATH: /app/data/warehouse/lab_bi.duckdb
-    volumes:
-      - duckdb_data:/app/data/warehouse
+      CH_HOST:     clickhouse
+      CH_PORT:     "8123"
+      CH_USER:     ${CH_USER:-default}
+      CH_PASSWORD: ${CH_PASSWORD:-}
 
   # ─────────────────────────────────────────────────────────
-  # Metabase: dashboard BI
+  # Metabase: dashboard BI — connect langsung ke ClickHouse
   # Akses: http://localhost:3000
   # ─────────────────────────────────────────────────────────
   metabase:
-    image: metabase/metabase:v0.50.0
+    build:
+      context: .
+      dockerfile: Dockerfile.metabase
     container_name: minilab_metabase
     restart: unless-stopped
     ports:
@@ -107,7 +136,10 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      clickhouse:
+        condition: service_healthy
     environment:
+      # Metabase menyimpan metadata-nya di PostgreSQL
       MB_DB_TYPE:   postgres
       MB_DB_DBNAME: ${PG_DB:-minilab}
       MB_DB_PORT:   "5432"
@@ -123,13 +155,13 @@ services:
 volumes:
   postgres_data:
     name: minilab_postgres_data
-  duckdb_data:
-    name: minilab_duckdb_data
+  clickhouse_data:
+    name: minilab_clickhouse_data
   metabase_data:
     name: minilab_metabase_data
 
 # ─────────────────────────────────────────────────────────
-# Network (default bridge, cukup untuk PoC)
+# Network
 # ─────────────────────────────────────────────────────────
 networks:
   default:

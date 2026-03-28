@@ -2,8 +2,8 @@
 run_pipeline.py
 Orchestrator ETL untuk Minilab EduBI.
 Urutan:
-  1. init_duckdb  — siapkan file DuckDB dan schema
-  2. load_csv     — load sample CSV ke bronze DuckDB
+  1. init_clickhouse — siapkan databases bronze/silver/gold di ClickHouse
+  2. load_csv        — load sample CSV ke bronze ClickHouse
   3. (opsional) extract_odoo — load dari PG odoo_sim ke bronze
 """
 
@@ -21,9 +21,9 @@ def run():
     log.info("  Minilab EduBI — ETL Pipeline")
     log.info("=" * 50)
 
-    # Step 1: Inisialisasi DuckDB
-    log.info("[Step 1/3] Inisialisasi DuckDB...")
-    from init_duckdb import init_database
+    # Step 1: Inisialisasi ClickHouse
+    log.info("[Step 1/3] Inisialisasi ClickHouse...")
+    from init_clickhouse import init_database
     init_database()
 
     # Step 2: Load CSV ke bronze
@@ -49,6 +49,5 @@ def run():
 
 
 if __name__ == "__main__":
-    # Pastikan import berjalan dari folder etl/
     sys.path.insert(0, os.path.dirname(__file__))
     run()

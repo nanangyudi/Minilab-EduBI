@@ -1,21 +1,31 @@
 # profiles.yml.example
-# Salin file ini menjadi profiles.yml dan sesuaikan path DuckDB
-# JANGAN commit profiles.yml ke git (sudah ada di .gitignore)
+# Salin file ini menjadi profiles.yml dan sesuaikan
+# JANGAN commit profiles.yml ke git (sudah di .gitignore)
 
 minilab_edubi:
   target: dev
   outputs:
 
     # ─── Profil untuk development lokal ───
+    # ClickHouse harus jalan di localhost:8123
     dev:
-      type: duckdb
-      path: ../data/warehouse/lab_bi.duckdb   # relatif dari folder dbt_project/
-      schema: main
+      type: clickhouse
+      schema: default
+      host: localhost
+      port: 8123
+      user: default
+      password: ""
+      secure: False
       threads: 1
 
     # ─── Profil untuk Docker container ───
+    # Digunakan oleh service dbt di docker-compose.yml
     docker:
-      type: duckdb
-      path: /app/data/warehouse/lab_bi.duckdb  # path absolut di dalam container
-      schema: main
+      type: clickhouse
+      schema: default
+      host: "{{ env_var('CH_HOST', 'clickhouse') }}"
+      port: 8123
+      user: "{{ env_var('CH_USER', 'default') }}"
+      password: "{{ env_var('CH_PASSWORD', '') }}"
+      secure: False
       threads: 1

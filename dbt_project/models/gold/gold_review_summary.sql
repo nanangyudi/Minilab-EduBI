@@ -2,29 +2,34 @@
 -- Gold layer: ringkasan ulasan per cabang
 -- Digunakan untuk: tile rating, bar chart sentimen di Metabase
 
-{{ config(materialized='table', schema='gold') }}
+{{ config(
+    materialized = 'table',
+    schema       = 'gold',
+    engine       = 'MergeTree()',
+    order_by     = 'branch'
+) }}
 
 SELECT
     branch,
-    COUNT(review_id)                                        AS total_reviews,
-    ROUND(AVG(CAST(rating AS DOUBLE)), 2)                   AS avg_rating,
+    count(review_id)                                        AS total_reviews,
+    round(avg(toFloat64(rating)), 2)                        AS avg_rating,
 
     -- Distribusi bintang
-    COUNT(CASE WHEN rating = 5 THEN 1 END)                  AS rating_5,
-    COUNT(CASE WHEN rating = 4 THEN 1 END)                  AS rating_4,
-    COUNT(CASE WHEN rating = 3 THEN 1 END)                  AS rating_3,
-    COUNT(CASE WHEN rating = 2 THEN 1 END)                  AS rating_2,
-    COUNT(CASE WHEN rating = 1 THEN 1 END)                  AS rating_1,
+    countIf(rating = 5)                                     AS rating_5,
+    countIf(rating = 4)                                     AS rating_4,
+    countIf(rating = 3)                                     AS rating_3,
+    countIf(rating = 2)                                     AS rating_2,
+    countIf(rating = 1)                                     AS rating_1,
 
     -- Distribusi sentimen
-    COUNT(CASE WHEN sentiment = 'Positif'  THEN 1 END)      AS sentiment_positif,
-    COUNT(CASE WHEN sentiment = 'Netral'   THEN 1 END)      AS sentiment_netral,
-    COUNT(CASE WHEN sentiment = 'Negatif'  THEN 1 END)      AS sentiment_negatif,
+    countIf(sentiment = 'Positif')                          AS sentiment_positif,
+    countIf(sentiment = 'Netral')                           AS sentiment_netral,
+    countIf(sentiment = 'Negatif')                          AS sentiment_negatif,
 
     -- Persentase positif
-    ROUND(
-        COUNT(CASE WHEN sentiment = 'Positif' THEN 1 END) * 100.0
-        / NULLIF(COUNT(review_id), 0),
+    round(
+        countIf(sentiment = 'Positif') * 100.0
+        / nullIf(count(review_id), 0),
         1
     )                                                       AS pct_positif
 

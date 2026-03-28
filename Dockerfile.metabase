@@ -1,0 +1,13 @@
+# Dockerfile.metabase
+# Metabase dengan ClickHouse driver (community plugin)
+# Driver diunduh saat build — tidak perlu internet saat runtime
+
+FROM metabase/metabase:v0.50.0
+
+# Unduh ClickHouse driver untuk Metabase
+RUN mkdir -p /plugins && \
+    curl -L \
+    https://github.com/ClickHouse/metabase-clickhouse-driver/releases/download/1.4.3/clickhouse.metabase-driver.jar \
+    -o /plugins/clickhouse.metabase-driver.jar
+
+EXPOSE 3000

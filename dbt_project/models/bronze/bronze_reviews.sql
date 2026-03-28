@@ -2,7 +2,12 @@
 -- Bronze layer: ambil raw data ulasan dari sumber (bronze.reviews)
 -- Tidak ada transformasi — data persis seperti yang dimuat ETL
 
-{{ config(materialized='table', schema='bronze') }}
+{{ config(
+    materialized = 'table',
+    schema       = 'bronze',
+    engine       = 'MergeTree()',
+    order_by     = '(review_date, review_id)'
+) }}
 
 SELECT
     review_id,

@@ -12,9 +12,6 @@ env/
 # ─── Jupyter ──────────────────────────────────
 .ipynb_checkpoints/
 
-# ─── DuckDB (file database, jangan commit) ────
-data/warehouse/*.duckdb
-
 # ─── dbt ──────────────────────────────────────
 dbt_project/target/
 dbt_project/dbt_packages/

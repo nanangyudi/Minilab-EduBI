@@ -1,12 +1,11 @@
 # Panduan Setup Metabase
 
-## Cara Kerja Metabase di Minilab EduBI
+## Koneksi Langsung ke ClickHouse
 
-Metabase **tidak** terhubung langsung ke DuckDB (DuckDB tidak mendukung koneksi network).
-Sebagai gantinya, hasil **Gold layer** diekspor ke PostgreSQL schema `analytics`, dan Metabase membaca dari sana.
+Berbeda dengan arsitektur sebelumnya, Metabase sekarang **terhubung langsung ke ClickHouse** (Data Warehouse). Tidak ada langkah export tambahan — data Gold di ClickHouse langsung tersedia.
 
 ```
-DuckDB gold.* → export_gold_to_postgres.py → PG analytics.* → Metabase
+ClickHouse gold.* → Metabase (connect langsung via port 8123)
 ```
 
 ---
@@ -15,99 +14,105 @@ DuckDB gold.* → export_gold_to_postgres.py → PG analytics.* → Metabase
 
 ### 1. Buka Metabase
 
-Buka browser dan akses: **http://localhost:3000**
+Buka browser: **http://localhost:3000**
 
-Tunggu loading (1-2 menit pertama kali). Jika belum muncul, cek log:
+Tunggu loading 1-2 menit. Jika belum muncul:
 ```bash
 docker compose logs metabase
 ```
 
 ### 2. Buat akun admin
 
-Isi form pendaftaran:
-- Nama lengkap
-- Email (bebas, untuk login lokal)
-- Password
+Isi form pendaftaran (nama, email, password). Klik **Next**.
 
-Klik **Next**.
+### 3. Tambah koneksi ClickHouse
 
-### 3. Tambah database
+Pada halaman "Add your data", pilih **ClickHouse** dari daftar database.
 
-Pada halaman "Add your data", pilih:
-- **Database type**: PostgreSQL
-- Isi koneksi:
+| Field         | Nilai        |
+|---------------|--------------|
+| Display name  | `Minilab DW` |
+| Host          | `clickhouse` |
+| Port          | `8123`       |
+| Database name | `gold`       |
+| Username      | `default`    |
+| Password      | *(kosong)*   |
 
-| Field         | Nilai                     |
-|---------------|---------------------------|
-| Display name  | `Minilab Analytics`       |
-| Host          | `postgres`                |
-| Port          | `5432`                    |
-| Database name | `minilab`                 |
-| Username      | `minilab`                 |
-| Password      | `minilab123`              |
-| Schema        | `analytics`               |
-
-> **Penting**: Hostname adalah `postgres` (nama service Docker), bukan `localhost`.
+> **Penting**: Host adalah `clickhouse` (nama service Docker), bukan `localhost`.
+> Koneksi ke database `gold` langsung — tabel sudah siap digunakan.
 
 Klik **Save** → **Finish**.
 
-### 4. Verifikasi tabel tersedia
+---
 
-Pergi ke **Browse Data** → pilih database `Minilab Analytics`.
+## Verifikasi Tabel Tersedia
 
-Tabel yang tersedia di schema `analytics`:
-- `gold_sales_daily` — data penjualan harian per cabang
-- `gold_branch_kpi` — KPI ringkasan per cabang
-- `gold_review_summary` — ringkasan ulasan per cabang
+Pergi ke **Browse Data** → pilih database `Minilab DW`.
+
+Tabel yang tersedia:
+| Tabel | Isi |
+|---|---|
+| `gold_sales_daily` | Revenue & orders harian per cabang |
+| `gold_branch_kpi` | KPI ringkasan per cabang |
+| `gold_review_summary` | Rating & sentimen per cabang |
 
 ---
 
 ## Membuat Dashboard Demo
 
-### Contoh Question 1: Total Revenue per Cabang
+### Question 1: Revenue per Cabang
 
-1. Klik **+ New** → **Question**
-2. Pilih database `Minilab Analytics` → tabel `gold_branch_kpi`
-3. Klik **Visualize**
-4. Pilih chart type: **Bar Chart**
-5. X-axis: `branch`, Y-axis: `total_revenue`
-6. Simpan dengan nama "Revenue per Cabang"
+1. **+ New** → **Question** → `Minilab DW` → `gold_branch_kpi`
+2. Klik **Visualize**
+3. Pilih **Bar Chart** — X: `branch`, Y: `total_revenue`
+4. Simpan: *"Revenue per Cabang"*
 
-### Contoh Question 2: Tren Penjualan Harian
+### Question 2: Tren Penjualan Harian
 
 1. **+ New** → **Question** → `gold_sales_daily`
-2. Group by: `order_date`
-3. Metric: Sum of `total_revenue`
-4. Chart type: **Line Chart**
-5. Simpan: "Tren Revenue Harian"
+2. Summarize: Sum of `total_revenue`, Group by `order_date`
+3. Chart type: **Line Chart**
+4. Simpan: *"Tren Revenue Harian"*
 
-### Contoh Question 3: Rating per Cabang
+### Question 3: Rating & Sentimen per Cabang
 
 1. **+ New** → **Question** → `gold_review_summary`
-2. Show: `branch`, `avg_rating`, `total_reviews`
+2. Tampilkan: `branch`, `avg_rating`, `pct_positif`, `total_reviews`
 3. Chart type: **Table** atau **Bar Chart**
-4. Simpan: "Rating Ulasan per Cabang"
+4. Simpan: *"Rating Ulasan per Cabang"*
 
-### Membuat Dashboard
+### Question 4: Pencapaian Target
 
-1. Klik **+ New** → **Dashboard**
-2. Beri nama: "Minilab EduBI — Sales Dashboard"
-3. Klik **Add a question** → pilih question yang sudah dibuat
-4. Atur layout drag-and-drop
-5. Klik **Save**
+1. **+ New** → **Question** → `gold_branch_kpi`
+2. Tampilkan: `branch`, `total_revenue`, `total_sales_target`, `revenue_achievement_pct`
+3. Chart type: **Table**
+4. Simpan: *"Pencapaian Target per Cabang"*
+
+### Buat Dashboard
+
+1. **+ New** → **Dashboard** → nama: *"Minilab EduBI — Sales Dashboard"*
+2. Klik **Add a question** → pilih 4 question di atas
+3. Atur layout dengan drag-and-drop
+4. Klik **Save**
+
+---
+
+## Menambah Database Bronze/Silver (opsional)
+
+Untuk eksplorasi tambahan, bisa tambah koneksi ke database lain di ClickHouse:
+- Database `silver` → untuk melihat data yang sudah dibersihkan
+- Database `bronze` → untuk melihat data mentah
+
+Prosedurnya sama, cukup ubah **Database name** saat setup koneksi.
 
 ---
 
 ## Refresh Data
 
-Setiap kali pipeline dijalankan ulang (`docker compose run app` + `docker compose run dbt`), data di PostgreSQL analytics akan diperbarui otomatis oleh `export_gold_to_postgres.py`.
+Setelah menjalankan ulang pipeline:
+```bash
+docker compose run --rm app   # ETL ulang
+docker compose run --rm dbt   # dbt ulang
+```
 
-Untuk menyegarkan tampilan di Metabase:
-- Klik ikon refresh pada question/dashboard
-- Atau tunggu cache Metabase expired (default 24 jam)
-
----
-
-## Screenshot Panduan
-
-> Lampirkan screenshot hasil dashboard pada laporan praktikum Anda.
+Data di ClickHouse langsung terupdate. Klik ikon refresh di Metabase untuk menyegarkan tampilan.

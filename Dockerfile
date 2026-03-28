@@ -4,7 +4,6 @@
 
 FROM python:3.11-slim
 
-# Set working directory di dalam container
 WORKDIR /app
 
 # Install dependency sistem (untuk psycopg2)
@@ -21,8 +20,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy seluruh kode proyek
 COPY . .
 
-# Pastikan folder data tersedia (akan di-mount via volume)
-RUN mkdir -p data/raw data/processed data/warehouse
+# Pastikan folder data tersedia
+RUN mkdir -p data/raw data/processed
 
-# Default command: jalankan ETL pipeline
 CMD ["python", "etl/run_pipeline.py"]

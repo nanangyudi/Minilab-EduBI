@@ -2,7 +2,12 @@
 -- Bronze layer: ambil raw data penjualan dari sumber (bronze.sales)
 -- Tidak ada transformasi — data persis seperti yang dimuat ETL
 
-{{ config(materialized='table', schema='bronze') }}
+{{ config(
+    materialized = 'table',
+    schema       = 'bronze',
+    engine       = 'MergeTree()',
+    order_by     = '(order_date, order_id)'
+) }}
 
 SELECT
     order_id,

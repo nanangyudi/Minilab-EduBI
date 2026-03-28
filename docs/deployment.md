@@ -2,72 +2,68 @@
 
 ## Prasyarat
 
-Pastikan software berikut sudah terinstall:
+| Software      | Versi Minimum | Cek                      |
+|---------------|---------------|--------------------------|
+| Docker        | 24.x          | `docker --version`       |
+| Docker Compose| 2.x           | `docker compose version` |
+| Git           | 2.x           | `git --version`          |
 
-| Software     | Versi Minimum | Cek                     |
-|--------------|---------------|-------------------------|
-| Docker       | 24.x          | `docker --version`      |
-| Docker Compose| 2.x          | `docker compose version`|
-| Git          | 2.x           | `git --version`         |
-
-> **Catatan**: Tidak perlu install Python atau dbt di mesin host — semua berjalan di dalam container Docker.
+> Python dan dbt **tidak perlu** diinstall di mesin host — semua berjalan di dalam container.
 
 ---
 
-## Langkah-langkah Deployment
+## Langkah Deployment
 
 ### 1. Clone repository
 
 ```bash
 git clone https://github.com/nanangyudi/Minilab-EduBI.git
 cd Minilab-EduBI
+git checkout claude/connect-edubi-repo-Ybjvh
 ```
 
-### 2. Buat file konfigurasi `.env`
+### 2. Buat file konfigurasi
 
 ```bash
 cp .env.example .env
 ```
 
-Untuk PoC standar, nilai default sudah cukup. Edit `.env` jika perlu menyesuaikan password atau port.
+Nilai default di `.env` sudah cukup untuk PoC lokal.
 
-### 3. Build Docker image
+### 3. Build Docker images
 
 ```bash
 docker compose build
 ```
 
-> Proses ini akan mengunduh base image Python dan menginstall semua dependency. Butuh beberapa menit pertama kali.
+> Build pertama kali membutuhkan beberapa menit karena mengunduh ClickHouse driver untuk Metabase.
 
-### 4. Jalankan PostgreSQL
+### 4. Jalankan PostgreSQL dan ClickHouse
 
 ```bash
-docker compose up -d postgres
+docker compose up -d postgres clickhouse
 ```
 
-Tunggu hingga PostgreSQL siap (sekitar 10-15 detik). Cek status:
+Tunggu hingga keduanya healthy (~15-20 detik):
 
 ```bash
 docker compose ps
-# postgres harus menampilkan "healthy"
+# postgres   → healthy
+# clickhouse → healthy
 ```
 
-PostgreSQL akan otomatis menjalankan `scripts/init_postgres.sql` yang membuat schema `odoo_sim` dan `analytics` beserta sample data.
-
-### 5. Jalankan ETL Pipeline
+### 5. Jalankan ETL
 
 ```bash
 docker compose run --rm app
 ```
 
-ETL akan:
-- Menginisialisasi file DuckDB (`data/warehouse/lab_bi.duckdb`)
-- Membuat schema `bronze`, `silver`, `gold` di DuckDB
-- Memuat sample CSV ke tabel `bronze.*`
-
 Output yang diharapkan:
 ```
-[Step 1/3] Inisialisasi DuckDB...
+[Step 1/3] Inisialisasi ClickHouse...
+  Database 'bronze' siap.
+  Database 'silver' siap.
+  Database 'gold' siap.
 [Step 2/3] Load CSV sample ke bronze...
   Loaded   50 baris → bronze.sales
   Loaded   20 baris → bronze.customers
@@ -82,18 +78,10 @@ Pipeline ETL selesai.
 docker compose run --rm dbt
 ```
 
-dbt akan:
-- Membuat Bronze models (mirror dari sumber)
-- Membuat Silver models (cleaned)
-- Membuat Gold models (aggregated)
-- Menjalankan test `not_null` dan `unique`
-- Mengekspor Gold ke PostgreSQL schema `analytics`
-
 Output yang diharapkan:
 ```
-... dbt run selesai, 11 model berhasil.
-... dbt test selesai, semua test passed.
-... Export Gold → PostgreSQL analytics selesai.
+... dbt run: 11 of 11 OK
+... dbt test: passed
 ```
 
 ### 7. Jalankan Metabase
@@ -102,30 +90,27 @@ Output yang diharapkan:
 docker compose up -d metabase
 ```
 
-Buka browser: **http://localhost:3000**
-
-Proses startup Metabase membutuhkan 1-2 menit. Lihat panduan setup Metabase di `docs/metabase_setup.md`.
+Buka **http://localhost:3000** (tunggu 1-2 menit startup).
 
 ---
 
 ## Perintah Berguna
 
 ```bash
-# Lihat status semua service
+# Status semua service
 docker compose ps
 
-# Lihat log service tertentu
-docker compose logs postgres
+# Log service tertentu
+docker compose logs clickhouse
 docker compose logs metabase
 
 # Masuk ke container untuk debug
 docker compose run --rm app bash
-docker compose run --rm dbt bash
 
 # Hentikan semua service
 docker compose down
 
-# Hapus semua data (reset penuh)
+# Reset penuh (hapus semua data)
 docker compose down -v
 ```
 
@@ -133,34 +118,38 @@ docker compose down -v
 
 ## Menjalankan Ulang Pipeline
 
-Jika ingin menjalankan ulang ETL dan dbt (misal setelah mengubah data):
-
 ```bash
-docker compose run --rm app    # ETL ulang
-docker compose run --rm dbt    # dbt ulang + export ulang
+docker compose run --rm app   # ETL ulang
+docker compose run --rm dbt   # dbt ulang
 ```
 
 ---
 
 ## Struktur Port
 
-| Service    | Port Host | Keterangan         |
-|------------|-----------|--------------------|
-| postgres   | 5432      | Koneksi DB langsung|
-| metabase   | 3000      | Dashboard UI       |
+| Service     | Port Host | Keterangan            |
+|-------------|-----------|-----------------------|
+| postgres    | 5432      | Koneksi PostgreSQL    |
+| clickhouse  | 8123      | HTTP interface        |
+| clickhouse  | 9000      | Native interface      |
+| metabase    | 3000      | Dashboard UI          |
 
 ---
 
 ## Troubleshooting
 
-**ETL gagal: "koneksi DuckDB gagal"**
-→ Pastikan volume `minilab_duckdb_data` terbentuk. Cek dengan `docker volume ls`.
+**ClickHouse tidak healthy**
+→ Cek log: `docker compose logs clickhouse`
+→ Pastikan port 8123 dan 9000 tidak dipakai.
 
-**dbt gagal: "file DuckDB tidak ditemukan"**
-→ Pastikan step ETL sudah berhasil terlebih dahulu. Volume harus sama.
+**ETL gagal: koneksi ClickHouse**
+→ Pastikan `docker compose up -d clickhouse` sudah berjalan dan healthy dulu.
 
-**Metabase tidak bisa jalan**
-→ Metabase butuh beberapa menit untuk startup. Cek log: `docker compose logs metabase`
+**dbt gagal: "database bronze tidak ditemukan"**
+→ Pastikan ETL sudah berhasil (Step 5) sebelum menjalankan dbt.
 
-**Port 5432 sudah dipakai**
-→ Edit `docker-compose.yml`, ganti `"5432:5432"` menjadi `"5433:5432"`, lalu update `.env` dengan `PG_PORT=5433`.
+**Metabase tidak muncul di localhost:3000**
+→ Metabase butuh 1-2 menit startup. Cek: `docker compose logs metabase`
+
+**Port sudah dipakai**
+→ Edit `docker-compose.yml`, ubah port mapping (misal `"8124:8123"`), lalu update `.env`.
