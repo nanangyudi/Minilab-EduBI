@@ -10,19 +10,26 @@ Mendemonstrasikan pipeline data end-to-end menggunakan stack modern yang ringan 
 | Data Warehouse | ClickHouse        | 24.3   |
 | ETL            | Python + pandas   | 3.11   |
 | Transformasi   | dbt Core          | 1.8.7  |
-| Dashboard      | Metabase          | 0.50   |
+| Dashboard      | Metabase          | 0.59.4 |
 | Source ERP     | PostgreSQL        | 15     |
 | Runtime        | Docker Compose    | 2.x    |
 
 ## Arsitektur
 
-Proyek ini menerapkan **Medallion Architecture** dengan **ClickHouse** sebagai Data Warehouse:
+Proyek ini menerapkan **Medallion Architecture** dengan **ClickHouse** sebagai Data Warehouse melalui **5 tahap pipeline eksplisit**:
 
 ```
-CSV / PostgreSQL(odoo_sim) → ETL Python → ClickHouse Bronze
-                                        → dbt → ClickHouse Silver
-                                        → dbt → ClickHouse Gold
-                                        → Metabase (connect langsung ke ClickHouse)
+TAHAP 1A  Extract Odoo      PostgreSQL odoo_sim → data/raw/odoo_*.csv
+TAHAP 1B  Extract Reviews   Google Places API   → data/raw/google_reviews.csv
+TAHAP 1C  File Manual       data/raw/sample_*.csv (siap dimuat)
+    ↓
+TAHAP 2   Load Bronze       data/raw/*.csv → ClickHouse bronze.*
+    ↓
+TAHAP 3   Transform Silver  dbt → ClickHouse silver.* (clean, typed)
+    ↓
+TAHAP 4   Transform Gold    dbt → ClickHouse gold.*   (agregasi KPI)
+    ↓
+TAHAP 5   Visualisasi       Metabase → connect ke ClickHouse gold
 ```
 
 | Layer  | Database ClickHouse | Keterangan                          |
@@ -123,7 +130,7 @@ Minilab-EduBI/
 ├── README.md
 ├── requirements.txt
 ├── Dockerfile              ← image Python + dbt
-├── Dockerfile.metabase     ← Metabase + ClickHouse driver
+├── Dockerfile.metabase     ← Metabase v0.59.4 (ClickHouse built-in)
 ├── docker-compose.yml      ← 5 service: postgres, clickhouse, app, dbt, metabase
 ├── .env.example
 ├── .gitignore
@@ -177,7 +184,10 @@ Minilab-EduBI/
 
 ## Setup Metabase
 
-Setelah pipeline selesai, tambah database di Metabase:
+Setelah `docker compose up -d metabase`, buka **http://localhost:3000** (tunggu ~2 menit).
+Driver ClickHouse sudah **built-in** di Metabase v0.59.4 — tidak perlu plugin tambahan.
+
+Tambah koneksi database baru:
 
 | Field    | Nilai        |
 |----------|--------------|
@@ -188,7 +198,13 @@ Setelah pipeline selesai, tambah database di Metabase:
 | Username | `default`    |
 | Password | *(kosong)*   |
 
-Tabel yang tersedia: `gold_sales_daily`, `gold_branch_kpi`, `gold_review_summary`.
+Tabel yang tersedia di Gold layer:
+
+| Tabel                  | Keterangan                              |
+|------------------------|-----------------------------------------|
+| `gold_sales_daily`     | Penjualan harian per cabang & kategori  |
+| `gold_branch_kpi`      | KPI per cabang: revenue, target, rating |
+| `gold_review_summary`  | Ringkasan sentimen ulasan per cabang    |
 
 Lihat panduan di [`docs/metabase_setup.md`](docs/metabase_setup.md).
 
