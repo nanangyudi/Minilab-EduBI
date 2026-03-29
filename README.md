@@ -5,6 +5,8 @@ Mendemonstrasikan pipeline data end-to-end menggunakan stack modern yang ringan 
 
 ## Stack Teknologi
 
+### Fase 1 — Business Intelligence Pipeline
+
 | Komponen       | Tool              | Versi  |
 |----------------|-------------------|--------|
 | Data Warehouse | ClickHouse        | 24.3   |
@@ -13,6 +15,16 @@ Mendemonstrasikan pipeline data end-to-end menggunakan stack modern yang ringan 
 | Dashboard      | Metabase          | 0.59.4 |
 | Source ERP     | PostgreSQL        | 15     |
 | Runtime        | Docker Compose    | 2.x    |
+
+### Fase 2 — Data Mining & Analitik Prediktif
+
+| Komponen         | Tool                  | Versi  |
+|------------------|-----------------------|--------|
+| Notebook         | Jupyter Lab           | 4.x    |
+| ML Framework     | scikit-learn          | 1.4+   |
+| Frequent Pattern | mlxtend (FP-Growth)   | 0.23+  |
+| Experiment Track | MLflow                | 2.14+  |
+| Visualisasi      | matplotlib / plotly   | 3.8+   |
 
 ## Arsitektur
 
@@ -58,7 +70,8 @@ Cabang: Pusat, Bandung, Surabaya, Selatan, Yogyakarta.
 
 ### Prasyarat
 - Docker Desktop terinstall dan berjalan
-- Port 3000, 5432, 8123 tidak dipakai aplikasi lain
+- **Fase 1**: Port 3000 (Metabase), 5432, 8123 tidak dipakai aplikasi lain
+- **Fase 2**: Tambahan port 8888 (Jupyter), 5000 (MLflow) tidak dipakai aplikasi lain
 
 ---
 
@@ -122,6 +135,65 @@ Lihat panduan lengkap di [`docs/deployment.md`](docs/deployment.md).
 
 ---
 
+## Fase 2 — Data Mining (branch: `fase2/data-mining`)
+
+Fase 2 menambahkan kemampuan analitik prediktif di atas pipeline Fase 1.
+Semua service berjalan dengan **Docker profile `analytics`**.
+
+### Menjalankan Fase 2
+
+**Cara cepat (script otomatis):**
+```bash
+git checkout fase2/data-mining
+bash scripts/run_fase2.sh start
+```
+
+**Cara manual:**
+```bash
+# 1. Jalankan pipeline Fase 1 terlebih dahulu
+docker compose up -d postgres clickhouse
+docker compose run --rm app
+docker compose run --rm dbt
+
+# 2. Jalankan service Fase 2
+docker compose --profile analytics up -d
+
+# 3. Akses
+#    Jupyter Lab : http://localhost:8888  (token: minilab)
+#    MLflow UI   : http://localhost:5000
+```
+
+### Notebook yang Tersedia
+
+| Notebook | Teknik | Sumber Data |
+|----------|--------|-------------|
+| `00_setup_verification.ipynb`     | Cek koneksi semua service       | — |
+| `01_clustering_customer_rfm.ipynb`| K-Means, RFM Segmentation       | `gold.gold_sales_daily` |
+| `02_classification_order_status.ipynb` | Random Forest, ROC-AUC   | `silver.silver_sales` |
+| `03_regression_revenue_forecast.ipynb` | Linear/Ridge, TimeSeriesSplit | `gold.gold_sales_daily` |
+| `04_association_market_basket.ipynb`   | FP-Growth, Association Rules  | `silver.silver_sales` |
+
+Semua notebook mencatat eksperimen ke MLflow secara otomatis.
+
+### Struktur Tambahan Fase 2
+
+```
+├── Dockerfile.jupyter          ← JupyterLab (scipy-notebook:python-3.11)
+├── requirements-fase2.txt      ← scikit-learn, mlxtend, mlflow, plotly
+├── experiments/                ← MLflow artifacts & model registry
+├── notebooks/
+│   ├── utils.py                ← helper koneksi ClickHouse & MLflow
+│   ├── 00_setup_verification.ipynb
+│   ├── 01_clustering_customer_rfm.ipynb
+│   ├── 02_classification_order_status.ipynb
+│   ├── 03_regression_revenue_forecast.ipynb
+│   └── 04_association_market_basket.ipynb
+└── scripts/
+    └── run_fase2.sh            ← shortcut CLI untuk Fase 2
+```
+
+---
+
 ## Struktur Proyek
 
 ```
@@ -131,7 +203,7 @@ Minilab-EduBI/
 ├── requirements.txt
 ├── Dockerfile              ← image Python + dbt
 ├── Dockerfile.metabase     ← Metabase v0.59.4 (ClickHouse built-in)
-├── docker-compose.yml      ← 5 service: postgres, clickhouse, app, dbt, metabase
+├── docker-compose.yml      ← multi-fase: profiles bi (Metabase) & analytics (Jupyter, MLflow)
 ├── .env.example
 ├── .gitignore
 │
@@ -171,7 +243,15 @@ Minilab-EduBI/
 │   └── run_pipeline_full.sh    ← jalankan semua 5 tahap sekaligus
 │
 ├── notebooks/
-│   └── exploration.ipynb     ← eksplorasi via clickhouse-connect
+│   ├── utils.py                    ← helper koneksi (Fase 2)
+│   ├── exploration.ipynb           ← eksplorasi via clickhouse-connect
+│   ├── 00_setup_verification.ipynb ← cek koneksi service (Fase 2)
+│   ├── 01_clustering_customer_rfm.ipynb
+│   ├── 02_classification_order_status.ipynb
+│   ├── 03_regression_revenue_forecast.ipynb
+│   └── 04_association_market_basket.ipynb
+│
+├── experiments/                    ← MLflow artifacts (Fase 2)
 │
 └── docs/
     ├── architecture.md
@@ -210,6 +290,15 @@ Lihat panduan di [`docs/metabase_setup.md`](docs/metabase_setup.md).
 
 ---
 
+## Roadmap Fase
+
+| Fase | Topik | Branch | Status |
+|------|-------|--------|--------|
+| 1 | BI Pipeline (ETL → dbt → Metabase) | `main` | ✅ Selesai |
+| 2 | Data Mining (Jupyter, MLflow, scikit-learn) | `fase2/data-mining` | 🚧 In Progress |
+| 3 | ML Deployment (FastAPI + MLflow serving) | `fase3/ml-deployment` | 📋 Planned |
+| 4 | Realtime Pipeline (Kafka + Flink) | `fase4/realtime-pipeline` | 📋 Planned |
+
 ## Saran Pengembangan Selanjutnya
 
 1. Hubungkan ke Odoo asli via XML-RPC (`etl/extract_odoo.py`)
@@ -217,6 +306,8 @@ Lihat panduan di [`docs/metabase_setup.md`](docs/metabase_setup.md).
 3. Tambah Airflow untuk scheduling pipeline otomatis
 4. Tambah dbt test lebih lanjut: `accepted_values`, `relationships`
 5. Jalankan `dbt docs generate && dbt docs serve` untuk dokumentasi model interaktif
+6. Kembangkan Fase 2: tuning hyperparameter, cross-validation, model comparison
+7. Fase 3: expose model terbaik sebagai REST API dengan FastAPI + MLflow serving
 
 ---
 
