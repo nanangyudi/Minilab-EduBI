@@ -1,0 +1,28 @@
+# requirements-fase2.txt
+# Dependensi tambahan untuk Fase 2: Data Mining & Analitik Prediktif
+# Install di dalam container Jupyter: sudah tercakup di Dockerfile.jupyter
+# Install lokal (opsional): pip install -r requirements-fase2.txt
+
+# ── Koneksi Data Warehouse ───────────────────────────────
+clickhouse-connect>=0.7.19
+pandas>=2.1.0
+numpy>=1.26.0
+
+# ── Machine Learning ─────────────────────────────────────
+scikit-learn>=1.4.0
+imbalanced-learn>=0.11.0     # untuk class imbalance pada klasifikasi
+
+# ── Aturan Asosiasi ──────────────────────────────────────
+mlxtend>=0.23.0              # Apriori, FP-Growth
+
+# ── Experiment Tracking ──────────────────────────────────
+mlflow>=2.14.0
+
+# ── Visualisasi ──────────────────────────────────────────
+matplotlib>=3.8.0
+seaborn>=0.13.0
+plotly>=5.18.0
+
+# ── Notebook Utilities ───────────────────────────────────
+ipywidgets>=8.1.0
+jupyterlab>=4.1.0

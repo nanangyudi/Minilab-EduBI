@@ -1,0 +1,17 @@
+# Dockerfile.jupyter
+# Jupyter Lab untuk Fase 2: Data Mining & Analitik Prediktif
+# Termasuk: scikit-learn, mlxtend, MLflow, ClickHouse connector
+
+FROM jupyter/scipy-notebook:python-3.11
+
+USER root
+
+COPY requirements-fase2.txt /tmp/requirements-fase2.txt
+RUN pip install --no-cache-dir -r /tmp/requirements-fase2.txt
+
+# Direktori kerja untuk notebook
+RUN mkdir -p /home/jovyan/work && chown -R ${NB_UID}:${NB_GID} /home/jovyan/work
+
+USER ${NB_UID}
+
+WORKDIR /home/jovyan/work

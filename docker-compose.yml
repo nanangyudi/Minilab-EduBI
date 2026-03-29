@@ -1,18 +1,21 @@
 # docker-compose.yml
-# Minilab EduBI — Deployment Lokal
+# Minilab EduBI — Deployment Lokal (Multi-Fase)
 #
-# Arsitektur:
-#   postgres    — Simulasi sumber ERP (odoo_sim) + metadata Metabase
-#   clickhouse  — Data Warehouse: Bronze, Silver, Gold
-#   app         — ETL Python (jalankan sekali: docker compose run app)
-#   dbt         — Transformasi dbt (jalankan sekali: docker compose run dbt)
-#   metabase    — Dashboard BI — connect ke ClickHouse (http://localhost:3000)
+# Services dan profil aktif per fase:
 #
-# Urutan penggunaan:
-#   1. docker compose up -d postgres clickhouse
-#   2. docker compose run --rm app
-#   3. docker compose run --rm dbt
-#   4. docker compose up -d metabase
+#   postgres, clickhouse  — selalu aktif (tidak butuh profil)
+#   [Fase 1 — BI Pipeline]
+#     app, dbt            — dijalankan dengan: docker compose run --rm app/dbt
+#     metabase            — docker compose --profile bi up -d
+#   [Fase 2 — Data Mining]
+#     jupyter, mlflow     — docker compose --profile analytics up -d
+#
+# Cara menjalankan:
+#   Fase 1 saja   : docker compose up -d postgres clickhouse
+#                   docker compose run --rm app && docker compose run --rm dbt
+#                   docker compose --profile bi up -d metabase
+#   Fase 2        : docker compose --profile analytics up -d
+#   Fase 1 + 2    : docker compose --profile bi --profile analytics up -d postgres clickhouse metabase jupyter mlflow
 
 version: "3.9"
 
@@ -146,6 +149,7 @@ services:
   # ─────────────────────────────────────────────────────────
   # Metabase: dashboard BI — connect langsung ke ClickHouse
   # Akses: http://localhost:3000
+  # Profile: bi
   # ─────────────────────────────────────────────────────────
   metabase:
     build:
@@ -153,6 +157,7 @@ services:
       dockerfile: Dockerfile.metabase
     container_name: minilab_metabase
     restart: unless-stopped
+    profiles: [bi]
     ports:
       - "3000:3000"
     depends_on:
@@ -170,6 +175,54 @@ services:
       MB_DB_HOST:   postgres
     volumes:
       - metabase_data:/metabase-data
+
+  # ─────────────────────────────────────────────────────────
+  # FASE 2 — Data Mining & Analitik Prediktif
+  # ─────────────────────────────────────────────────────────
+
+  # Jupyter Lab: eksplorasi data & eksperimen model
+  # Akses: http://localhost:8888
+  # Profile: analytics
+  jupyter:
+    build:
+      context: .
+      dockerfile: Dockerfile.jupyter
+    container_name: minilab_jupyter
+    profiles: [analytics]
+    ports:
+      - "8888:8888"
+    environment:
+      CH_HOST:     clickhouse
+      CH_PORT:     "8123"
+      CH_USER:     ${CH_USER:-default}
+      CH_PASSWORD: ${CH_PASSWORD:-}
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      JUPYTER_ENABLE_LAB: "yes"
+      JUPYTER_TOKEN: ${JUPYTER_TOKEN:-minilab}
+    volumes:
+      - ./notebooks:/home/jovyan/work/notebooks
+      - ./experiments:/home/jovyan/work/experiments
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+
+  # MLflow: experiment tracking & model registry
+  # Akses: http://localhost:5000
+  # Profile: analytics
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.14.0
+    container_name: minilab_mlflow
+    profiles: [analytics]
+    ports:
+      - "5000:5000"
+    command: >
+      mlflow server
+        --host 0.0.0.0
+        --port 5000
+        --backend-store-uri sqlite:////mlflow/mlflow.db
+        --default-artifact-root /mlflow/artifacts
+    volumes:
+      - ./experiments:/mlflow
 
 # ─────────────────────────────────────────────────────────
 # Volumes
