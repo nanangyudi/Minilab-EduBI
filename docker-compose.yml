@@ -210,7 +210,7 @@ services:
   # Akses: http://localhost:5000
   # Profile: analytics
   mlflow:
-    image: ghcr.io/mlflow/mlflow:v2.14.0
+    image: ghcr.io/mlflow/mlflow:v2.14.3
     container_name: minilab_mlflow
     profiles: [analytics]
     ports:
