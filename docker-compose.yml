@@ -213,14 +213,16 @@ services:
     image: ghcr.io/mlflow/mlflow:v2.14.3
     container_name: minilab_mlflow
     profiles: [analytics]
+    user: root
     ports:
       - "5000:5000"
     command: >
-      mlflow server
-        --host 0.0.0.0
-        --port 5000
-        --backend-store-uri sqlite:////mlflow/mlflow.db
-        --default-artifact-root /mlflow/artifacts
+      sh -c "mkdir -p /mlflow/artifacts &&
+             mlflow server
+               --host 0.0.0.0
+               --port 5000
+               --backend-store-uri sqlite:////mlflow/mlflow.db
+               --default-artifact-root /mlflow/artifacts"
     volumes:
       - ./experiments:/mlflow
 
