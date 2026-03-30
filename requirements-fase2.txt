@@ -5,8 +5,9 @@
 
 # ── Koneksi Data Warehouse ───────────────────────────────
 clickhouse-connect>=0.7.19
-pandas>=2.1.0
-numpy>=1.26.0
+pandas>=2.1.0,<3.0
+# numpy<2 wajib: pyarrow di base image dikompile dengan NumPy 1.x ABI
+numpy>=1.26.0,<2.0
 
 # ── Machine Learning ─────────────────────────────────────
 scikit-learn>=1.4.0

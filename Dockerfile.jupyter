@@ -6,8 +6,11 @@ FROM jupyter/scipy-notebook:python-3.11
 
 USER root
 
+# Upgrade pip terlebih dahulu, lalu install requirements.
+# numpy<2 di-pin di requirements-fase2.txt untuk kompatibilitas pyarrow ABI.
 COPY requirements-fase2.txt /tmp/requirements-fase2.txt
-RUN pip install --no-cache-dir -r /tmp/requirements-fase2.txt
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r /tmp/requirements-fase2.txt
 
 # Direktori kerja untuk notebook
 RUN mkdir -p /home/jovyan/work && chown -R ${NB_UID}:${NB_GID} /home/jovyan/work
