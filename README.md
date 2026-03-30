@@ -18,13 +18,13 @@ Mendemonstrasikan pipeline data end-to-end menggunakan stack modern yang ringan 
 
 ### Fase 2 — Data Mining & Analitik Prediktif
 
-| Komponen         | Tool                  | Versi  |
-|------------------|-----------------------|--------|
-| Notebook         | Jupyter Lab           | 4.x    |
-| ML Framework     | scikit-learn          | 1.4+   |
-| Frequent Pattern | mlxtend (FP-Growth)   | 0.23+  |
-| Experiment Track | MLflow                | 2.14+  |
-| Visualisasi      | matplotlib / plotly   | 3.8+   |
+| Komponen         | Tool                  | Versi   |
+|------------------|-----------------------|---------|
+| Notebook         | Jupyter Lab           | 4.x     |
+| ML Framework     | scikit-learn          | 1.4+    |
+| Frequent Pattern | mlxtend (FP-Growth)   | 0.23+   |
+| Experiment Track | MLflow                | 2.14.3  |
+| Visualisasi      | matplotlib / plotly   | 3.8+    |
 
 ## Arsitektur
 
@@ -82,7 +82,6 @@ Jalankan semua 5 tahap pipeline sekaligus:
 ```bash
 git clone https://github.com/nanangyudi/Minilab-EduBI.git
 cd Minilab-EduBI
-git checkout claude/connect-edubi-repo-Ybjvh
 cp .env.example .env
 docker compose build
 bash scripts/run_pipeline_full.sh
@@ -101,7 +100,6 @@ Jalankan setiap tahap secara terpisah agar proses lebih mudah dipahami.
 # 1. Clone repository
 git clone https://github.com/nanangyudi/Minilab-EduBI.git
 cd Minilab-EduBI
-git checkout claude/connect-edubi-repo-Ybjvh
 
 # 2. Salin konfigurasi
 cp .env.example .env
@@ -140,56 +138,81 @@ Lihat panduan lengkap di [`docs/deployment.md`](docs/deployment.md).
 Fase 2 menambahkan kemampuan analitik prediktif di atas pipeline Fase 1.
 Semua service berjalan dengan **Docker profile `analytics`**.
 
+### Prasyarat Tambahan Fase 2
+
+- Port 8888 (Jupyter) dan 5000 (MLflow) tidak dipakai aplikasi lain
+- MLflow client dan server menggunakan versi yang sama (`2.14.3`) — **jangan upgrade salah satunya saja**
+- Folder `experiments/` harus bisa ditulis oleh Docker (di Windows: pastikan drive di-share di Docker Desktop Settings → Resources → File Sharing)
+
 ### Menjalankan Fase 2
 
-**Cara cepat (script otomatis):**
+**1. Pindah ke branch Fase 2:**
 ```bash
+git clone https://github.com/nanangyudi/Minilab-EduBI.git   # jika belum ada
+cd Minilab-EduBI
 git checkout fase2/data-mining
-bash scripts/run_fase2.sh start
+cp .env.example .env
 ```
 
-**Cara manual:**
+**2. Build image:**
 ```bash
-# 1. Jalankan pipeline Fase 1 terlebih dahulu
+docker compose build jupyter
+```
+
+**3. Jalankan pipeline Fase 1 terlebih dahulu:**
+```bash
 docker compose up -d postgres clickhouse
 docker compose run --rm app
 docker compose run --rm dbt
-
-# 2. Jalankan service Fase 2
-docker compose --profile analytics up -d
-
-# 3. Akses
-#    Jupyter Lab : http://localhost:8888  (token: minilab)
-#    MLflow UI   : http://localhost:5000
 ```
+
+**4. Jalankan service Fase 2:**
+```bash
+docker compose --profile analytics up -d
+```
+
+> **Windows**: Jika Jupyter tidak dapat menulis artifact MLflow, jalankan:
+> ```powershell
+> docker compose --profile analytics up -d jupyter --force-recreate
+> ```
+
+**5. Akses:**
+- Jupyter Lab : http://localhost:8888 — token: `minilab`
+- MLflow UI   : http://localhost:5000
+
+**6. Mulai dari notebook verifikasi:**
+
+Buka `notebooks/00_setup_verification.ipynb` dan jalankan semua cell dari atas ke bawah.
+Jika semua cell hijau (tidak error), lanjutkan ke notebook berikutnya.
 
 ### Notebook yang Tersedia
 
-| Notebook | Teknik | Sumber Data |
-|----------|--------|-------------|
-| `00_setup_verification.ipynb`     | Cek koneksi semua service       | — |
-| `01_clustering_customer_rfm.ipynb`| K-Means, RFM Segmentation       | `gold.gold_sales_daily` |
-| `02_classification_order_status.ipynb` | Random Forest, ROC-AUC   | `silver.silver_sales` |
-| `03_regression_revenue_forecast.ipynb` | Linear/Ridge, TimeSeriesSplit | `gold.gold_sales_daily` |
-| `04_association_market_basket.ipynb`   | FP-Growth, Association Rules  | `silver.silver_sales` |
+| # | Notebook | Teknik | Sumber Data |
+|---|----------|--------|-------------|
+| 00 | `00_setup_verification.ipynb`     | Cek koneksi ClickHouse & MLflow | — |
+| 01 | `01_clustering_customer_rfm.ipynb`| K-Means, RFM Segmentation       | `silver.silver_sales` |
+| 02 | `02_classification_order_status.ipynb` | Random Forest, ROC-AUC     | `silver.silver_sales` |
+| 03 | `03_regression_revenue_forecast.ipynb` | Linear/Ridge, TimeSeriesSplit | `gold.gold_sales_daily` |
+| 04 | `04_association_market_basket.ipynb`   | FP-Growth, Association Rules  | `silver.silver_sales` |
 
-Semua notebook mencatat eksperimen ke MLflow secara otomatis.
+Semua notebook (01–04) mencatat parameter, metrik, dan model ke MLflow secara otomatis.
+Hasil eksperimen dapat dilihat di http://localhost:5000.
 
 ### Struktur Tambahan Fase 2
 
 ```
 ├── Dockerfile.jupyter          ← JupyterLab (scipy-notebook:python-3.11)
-├── requirements-fase2.txt      ← scikit-learn, mlxtend, mlflow, plotly
-├── experiments/                ← MLflow artifacts & model registry
+├── requirements-fase2.txt      ← scikit-learn, mlxtend, mlflow==2.14.3, plotly
+├── experiments/                ← MLflow artifacts, model registry, SQLite DB
 ├── notebooks/
-│   ├── utils.py                ← helper koneksi ClickHouse & MLflow
+│   ├── utils.py                ← helper: get_ch_client(), read_sql(), mlflow_setup()
 │   ├── 00_setup_verification.ipynb
 │   ├── 01_clustering_customer_rfm.ipynb
 │   ├── 02_classification_order_status.ipynb
 │   ├── 03_regression_revenue_forecast.ipynb
 │   └── 04_association_market_basket.ipynb
 └── scripts/
-    └── run_fase2.sh            ← shortcut CLI untuk Fase 2
+    └── run_fase2.sh            ← shortcut CLI: start/stop/status/logs/pipeline
 ```
 
 ---
@@ -295,7 +318,7 @@ Lihat panduan di [`docs/metabase_setup.md`](docs/metabase_setup.md).
 | Fase | Topik | Branch | Status |
 |------|-------|--------|--------|
 | 1 | BI Pipeline (ETL → dbt → Metabase) | `main` | ✅ Selesai |
-| 2 | Data Mining (Jupyter, MLflow, scikit-learn) | `fase2/data-mining` | 🚧 In Progress |
+| 2 | Data Mining (Jupyter, MLflow, scikit-learn) | `fase2/data-mining` | 🚧 Aktif — nb 00 & 01 ✅ |
 | 3 | ML Deployment (FastAPI + MLflow serving) | `fase3/ml-deployment` | 📋 Planned |
 | 4 | Realtime Pipeline (Kafka + Flink) | `fase4/realtime-pipeline` | 📋 Planned |
 
@@ -317,6 +340,8 @@ Lihat panduan di [`docs/metabase_setup.md`](docs/metabase_setup.md).
 - Tidak ada scheduling — pipeline dijalankan manual
 - ClickHouse default user (tanpa password) — hanya untuk demo lokal
 - Tidak ada autentikasi Metabase multi-user
+- MLflow menggunakan SQLite backend — tidak direkomendasikan untuk produksi (gunakan PostgreSQL)
+- Fase 2 dijalankan sebagai `root` di dalam container untuk kemudahan setup lokal — tidak untuk produksi
 
 ---
 
