@@ -189,6 +189,7 @@ services:
       dockerfile: Dockerfile.jupyter
     container_name: minilab_jupyter
     profiles: [analytics]
+    user: root
     ports:
       - "8888:8888"
     environment:
@@ -202,9 +203,12 @@ services:
     volumes:
       - ./notebooks:/home/jovyan/work/notebooks
       - ./experiments:/home/jovyan/work/experiments
+      - ./experiments:/mlflow
     depends_on:
       clickhouse:
         condition: service_healthy
+      mlflow:
+        condition: service_started
 
   # MLflow: experiment tracking & model registry
   # Akses: http://localhost:5000
