@@ -7,7 +7,6 @@
 
 CREATE SCHEMA IF NOT EXISTS odoo_sim;
 
--- Tabel simulasi customer dari Odoo
 CREATE TABLE IF NOT EXISTS odoo_sim.res_partner (
     id              SERIAL PRIMARY KEY,
     name            VARCHAR(100) NOT NULL,
@@ -20,7 +19,6 @@ CREATE TABLE IF NOT EXISTS odoo_sim.res_partner (
     created_at      TIMESTAMP DEFAULT NOW()
 );
 
--- Tabel simulasi sales order dari Odoo
 CREATE TABLE IF NOT EXISTS odoo_sim.sale_order (
     id              SERIAL PRIMARY KEY,
     name            VARCHAR(20) NOT NULL,
@@ -36,7 +34,11 @@ CREATE TABLE IF NOT EXISTS odoo_sim.sale_order (
     created_at      TIMESTAMP DEFAULT NOW()
 );
 
--- Seed data
+-- TRUNCATE + INSERT agar idempotent (aman dijalankan berulang)
+TRUNCATE TABLE odoo_sim.sale_order RESTART IDENTITY CASCADE;
+TRUNCATE TABLE odoo_sim.res_partner RESTART IDENTITY CASCADE;
+
+-- 20 Customer
 INSERT INTO odoo_sim.res_partner (name, email, phone, city, branch, customer_since) VALUES
 ('Andi Saputra',    'andi.saputra@email.com',    '081234567001', 'Jakarta',    'Pusat',      '2021-03-15'),
 ('Budi Santoso',    'budi.santoso@email.com',    '081234567002', 'Bandung',    'Bandung',    '2020-07-22'),
@@ -47,20 +49,119 @@ INSERT INTO odoo_sim.res_partner (name, email, phone, city, branch, customer_sin
 ('Gita Lestari',    'gita.lestari@email.com',    '081234567007', 'Surabaya',   'Surabaya',   '2020-02-14'),
 ('Hendra Wijaya',   'hendra.wijaya@email.com',   '081234567008', 'Jakarta',    'Pusat',      '2023-06-01'),
 ('Indah Permata',   'indah.permata@email.com',   '081234567009', 'Yogyakarta', 'Yogyakarta', '2021-12-20'),
-('Joko Susilo',     'joko.susilo@email.com',     '081234567010', 'Jakarta',    'Selatan',    '2019-05-09')
-ON CONFLICT DO NOTHING;
+('Joko Susilo',     'joko.susilo@email.com',     '081234567010', 'Jakarta',    'Selatan',    '2019-05-09'),
+('Kartika Sari',    'kartika.sari@email.com',    '081234567011', 'Bandung',    'Bandung',    '2022-09-14'),
+('Lukman Hakim',    'lukman.hakim@email.com',    '081234567012', 'Jakarta',    'Pusat',      '2020-03-28'),
+('Maya Anggraini',  'maya.anggraini@email.com',  '081234567013', 'Surabaya',   'Surabaya',   '2021-06-17'),
+('Novan Pratama',   'novan.pratama@email.com',   '081234567014', 'Yogyakarta', 'Yogyakarta', '2023-01-05'),
+('Okta Fitriani',   'okta.fitriani@email.com',   '081234567015', 'Jakarta',    'Pusat',      '2019-08-22'),
+('Putra Mahardika', 'putra.mahardika@email.com', '081234567016', 'Bandung',    'Bandung',    '2022-11-30'),
+('Rini Susanti',    'rini.susanti@email.com',    '081234567017', 'Jakarta',    'Selatan',    '2020-05-11'),
+('Sandi Kurniawan', 'sandi.kurniawan@email.com', '081234567018', 'Surabaya',   'Surabaya',   '2021-10-03'),
+('Tari Wulandari',  'tari.wulandari@email.com',  '081234567019', 'Yogyakarta', 'Yogyakarta', '2023-03-19'),
+('Umar Fauzi',      'umar.fauzi@email.com',      '081234567020', 'Jakarta',    'Pusat',      '2020-12-07');
 
+-- 100 Sales Order (80 done, 20 cancelled)
 INSERT INTO odoo_sim.sale_order (name, partner_id, product_name, category, quantity, unit_price, amount_total, date_order, branch, state) VALUES
-('SO001', 1, 'Laptop Acer Aspire 5',    'Elektronik', 1, 7500000,  7500000,  '2024-01-05', 'Pusat',      'done'),
-('SO002', 2, 'Mouse Wireless Logitech', 'Aksesoris',  2,  350000,   700000,  '2024-01-07', 'Bandung',    'done'),
-('SO003', 3, 'Monitor LG 24 inch',      'Elektronik', 1, 2800000,  2800000,  '2024-01-10', 'Pusat',      'done'),
-('SO004', 4, 'Keyboard Mechanical',     'Aksesoris',  1,  850000,   850000,  '2024-01-12', 'Surabaya',   'done'),
-('SO005', 5, 'Headset Sony',            'Aksesoris',  1, 1200000,  1200000,  '2024-01-15', 'Selatan',    'done'),
-('SO006', 6, 'Laptop Asus Vivobook',    'Elektronik', 1, 8200000,  8200000,  '2024-01-18', 'Bandung',    'done'),
-('SO007', 7, 'Webcam Logitech C920',    'Aksesoris',  1,  900000,   900000,  '2024-01-20', 'Surabaya',   'done'),
-('SO008', 8, 'SSD Samsung 1TB',         'Komponen',   2, 1100000,  2200000,  '2024-01-22', 'Pusat',      'done'),
-('SO009', 9, 'RAM DDR4 16GB',           'Komponen',   1,  650000,   650000,  '2024-01-25', 'Yogyakarta', 'done'),
-('SO010',10, 'Printer Canon PIXMA',     'Elektronik', 1, 1500000,  1500000,  '2024-01-28', 'Selatan',    'done')
-ON CONFLICT DO NOTHING;
+('SO001',  1,'Laptop Acer Aspire 5',        'Elektronik',1, 7500000, 7500000,'2024-01-05','Pusat',      'done'),
+('SO002',  2,'Mouse Wireless Logitech',      'Aksesoris', 2,  350000,  700000,'2024-01-07','Bandung',    'done'),
+('SO003',  3,'Monitor LG 24 inch',           'Elektronik',1, 2800000, 2800000,'2024-01-10','Pusat',      'done'),
+('SO004',  4,'Keyboard Mechanical',          'Aksesoris', 1,  850000,  850000,'2024-01-12','Surabaya',   'done'),
+('SO005',  5,'Headset Sony',                 'Aksesoris', 1, 1200000, 1200000,'2024-01-15','Selatan',    'done'),
+('SO006',  6,'Laptop Asus Vivobook',         'Elektronik',1, 8200000, 8200000,'2024-01-18','Bandung',    'cancelled'),
+('SO007',  7,'Webcam Logitech C920',         'Aksesoris', 1,  900000,  900000,'2024-01-20','Surabaya',   'done'),
+('SO008',  8,'SSD Samsung 1TB',              'Komponen',  2, 1100000, 2200000,'2024-01-22','Pusat',      'done'),
+('SO009',  9,'RAM DDR4 16GB',                'Komponen',  1,  650000,  650000,'2024-01-25','Yogyakarta', 'done'),
+('SO010', 10,'Printer Canon PIXMA',          'Elektronik',1, 1500000, 1500000,'2024-01-28','Selatan',    'cancelled'),
+('SO011', 11,'Laptop Lenovo IdeaPad',        'Elektronik',1, 7000000, 7000000,'2024-02-02','Bandung',    'done'),
+('SO012', 12,'Speaker Bluetooth JBL',        'Aksesoris', 1,  750000,  750000,'2024-02-05','Pusat',      'done'),
+('SO013', 13,'Tablet Samsung Tab A8',        'Elektronik',1, 3500000, 3500000,'2024-02-08','Surabaya',   'cancelled'),
+('SO014', 14,'Flash Disk 128GB',             'Komponen',  3,  120000,  360000,'2024-02-10','Yogyakarta', 'done'),
+('SO015', 15,'Charger Laptop Universal',     'Aksesoris', 1,  280000,  280000,'2024-02-13','Pusat',      'done'),
+('SO016',  1,'Monitor Samsung 27 inch',      'Elektronik',1, 3200000, 3200000,'2024-02-15','Pusat',      'done'),
+('SO017', 16,'Laptop HP Pavilion',           'Elektronik',1, 6800000, 6800000,'2024-02-18','Bandung',    'cancelled'),
+('SO018', 17,'Mouse Pad Gaming XL',          'Aksesoris', 2,  150000,  300000,'2024-02-20','Selatan',    'done'),
+('SO019', 18,'Printer Epson L3110',          'Elektronik',1, 1800000, 1800000,'2024-02-22','Surabaya',   'done'),
+('SO020', 19,'Hub USB 7 Port',               'Aksesoris', 1,  320000,  320000,'2024-02-25','Yogyakarta', 'done'),
+('SO021', 20,'SSD NVMe 512GB',               'Komponen',  1,  850000,  850000,'2024-02-28','Pusat',      'done'),
+('SO022',  3,'Headphone Audio-Technica',     'Aksesoris', 1, 1450000, 1450000,'2024-03-03','Pusat',      'done'),
+('SO023',  5,'Laptop Dell Inspiron',         'Elektronik',1, 9500000, 9500000,'2024-03-06','Selatan',    'cancelled'),
+('SO024',  7,'Keyboard Wireless Apple',      'Aksesoris', 1, 1200000, 1200000,'2024-03-08','Surabaya',   'done'),
+('SO025',  9,'Laptop MSI Modern',            'Elektronik',1,10500000,10500000,'2024-03-11','Yogyakarta', 'done'),
+('SO026', 11,'RAM DDR4 32GB',                'Komponen',  2, 1200000, 2400000,'2024-03-14','Bandung',    'done'),
+('SO027', 13,'Webcam Razer Kiyo',            'Aksesoris', 1, 1100000, 1100000,'2024-03-17','Surabaya',   'done'),
+('SO028', 15,'Monitor BenQ 24 inch',         'Elektronik',1, 2600000, 2600000,'2024-03-20','Pusat',      'cancelled'),
+('SO029',  2,'Laptop ASUS ROG',              'Elektronik',1,15000000,15000000,'2024-03-22','Bandung',    'done'),
+('SO030',  4,'Speaker Edifier',              'Aksesoris', 1,  680000,  680000,'2024-03-25','Surabaya',   'done'),
+('SO031',  6,'SSD External WD 1TB',          'Komponen',  1,  950000,  950000,'2024-04-01','Bandung',    'done'),
+('SO032',  8,'Laptop Acer Nitro',            'Elektronik',1,12000000,12000000,'2024-04-03','Pusat',      'cancelled'),
+('SO033', 10,'Mouse Razer DeathAdder',       'Aksesoris', 1,  750000,  750000,'2024-04-06','Selatan',    'done'),
+('SO034', 12,'Tablet iPad Mini',             'Elektronik',1, 8500000, 8500000,'2024-04-09','Pusat',      'done'),
+('SO035', 14,'Power Bank 20000mAh',          'Aksesoris', 1,  450000,  450000,'2024-04-12','Yogyakarta', 'done'),
+('SO036', 16,'Laptop Lenovo ThinkPad',       'Elektronik',1,13500000,13500000,'2024-04-15','Bandung',    'cancelled'),
+('SO037', 18,'Keyboard Keychron K2',         'Aksesoris', 1, 1350000, 1350000,'2024-04-18','Surabaya',   'done'),
+('SO038', 20,'Monitor LG UltraWide',         'Elektronik',1, 4800000, 4800000,'2024-04-21','Pusat',      'done'),
+('SO039',  1,'Laptop MacBook Air M2',        'Elektronik',1,18000000,18000000,'2024-04-24','Pusat',      'cancelled'),
+('SO040',  3,'Webcam Sony ZV-1',             'Elektronik',1, 7500000, 7500000,'2024-04-27','Pusat',      'done'),
+('SO041',  5,'SSD Samsung 2TB',              'Komponen',  1, 1900000, 1900000,'2024-05-02','Selatan',    'done'),
+('SO042',  7,'Printer HP LaserJet',          'Elektronik',1, 2200000, 2200000,'2024-05-05','Surabaya',   'done'),
+('SO043',  9,'Mouse Logitech MX Master',     'Aksesoris', 1, 1100000, 1100000,'2024-05-08','Yogyakarta', 'done'),
+('SO044', 11,'Laptop ASUS ZenBook',          'Elektronik',1,11000000,11000000,'2024-05-11','Bandung',    'cancelled'),
+('SO045', 13,'Hub Thunderbolt 4',            'Aksesoris', 1,  850000,  850000,'2024-05-14','Surabaya',   'done'),
+('SO046', 15,'RAM DDR5 16GB',                'Komponen',  2,  950000, 1900000,'2024-05-17','Pusat',      'done'),
+('SO047', 17,'Monitor AOC 27 inch',          'Elektronik',1, 3100000, 3100000,'2024-05-20','Selatan',    'done'),
+('SO048', 19,'Keyboard Logitech K380',       'Aksesoris', 1,  480000,  480000,'2024-05-23','Yogyakarta', 'done'),
+('SO049',  2,'Laptop Lenovo Legion',         'Elektronik',1,16500000,16500000,'2024-05-26','Bandung',    'cancelled'),
+('SO050',  4,'Cooling Pad Laptop',           'Aksesoris', 1,  250000,  250000,'2024-05-29','Surabaya',   'done'),
+('SO051',  6,'Laptop Acer Swift',            'Elektronik',1, 9800000, 9800000,'2024-06-02','Bandung',    'done'),
+('SO052',  8,'Mechanical Keyboard Corsair',  'Aksesoris', 1, 1600000, 1600000,'2024-06-04','Pusat',      'done'),
+('SO053', 10,'Monitor Philips 24 inch',      'Elektronik',1, 2400000, 2400000,'2024-06-07','Selatan',    'cancelled'),
+('SO054', 12,'RAM DDR4 8GB',                 'Komponen',  2,  380000,  760000,'2024-06-09','Pusat',      'done'),
+('SO055', 14,'Headset Jabra Evolve',         'Aksesoris', 1, 2100000, 2100000,'2024-06-12','Yogyakarta', 'done'),
+('SO056', 16,'Laptop Dell XPS',              'Elektronik',1,19500000,19500000,'2024-06-14','Bandung',    'cancelled'),
+('SO057', 18,'SSD Kingston 480GB',           'Komponen',  1,  650000,  650000,'2024-06-17','Surabaya',   'done'),
+('SO058', 20,'Mouse Microsoft Ergonomic',    'Aksesoris', 1,  580000,  580000,'2024-06-19','Pusat',      'done'),
+('SO059',  1,'Printer Brother MFC',          'Elektronik',1, 2700000, 2700000,'2024-06-22','Pusat',      'done'),
+('SO060',  3,'USB-C Hub 8in1',               'Aksesoris', 1,  420000,  420000,'2024-06-25','Pusat',      'done'),
+('SO061',  5,'Laptop HP Spectre',            'Elektronik',1,17000000,17000000,'2024-07-01','Selatan',    'cancelled'),
+('SO062',  7,'Monitor ASUS ProArt',          'Elektronik',1, 6500000, 6500000,'2024-07-03','Surabaya',   'done'),
+('SO063',  9,'Keyboard Logitech G Pro',      'Aksesoris', 1, 1800000, 1800000,'2024-07-06','Yogyakarta', 'done'),
+('SO064', 11,'SSD WD Black 1TB',             'Komponen',  1, 1350000, 1350000,'2024-07-09','Bandung',    'done'),
+('SO065', 13,'Webcam Elgato Facecam',        'Aksesoris', 1, 2500000, 2500000,'2024-07-12','Surabaya',   'done'),
+('SO066', 15,'Laptop Lenovo Yoga',           'Elektronik',1,14000000,14000000,'2024-07-15','Pusat',      'done'),
+('SO067', 17,'RAM DDR5 32GB',                'Komponen',  1, 1800000, 1800000,'2024-07-18','Selatan',    'done'),
+('SO068', 19,'Speaker Harman Kardon',        'Aksesoris', 1, 3200000, 3200000,'2024-07-21','Yogyakarta', 'done'),
+('SO069',  2,'Laptop ASUS ProArt Studio',    'Elektronik',1,22000000,22000000,'2024-07-24','Bandung',    'cancelled'),
+('SO070',  4,'Flash Disk 256GB',             'Komponen',  2,  180000,  360000,'2024-07-27','Surabaya',   'done'),
+('SO071',  6,'Headset Sennheiser HD',        'Aksesoris', 1, 2800000, 2800000,'2024-08-01','Bandung',    'done'),
+('SO072',  8,'Laptop Acer Predator',         'Elektronik',1,21000000,21000000,'2024-08-04','Pusat',      'cancelled'),
+('SO073', 10,'Mouse Logitech G502',          'Aksesoris', 1,  850000,  850000,'2024-08-07','Selatan',    'done'),
+('SO074', 12,'Monitor Dell UltraSharp',      'Elektronik',1, 7800000, 7800000,'2024-08-10','Pusat',      'done'),
+('SO075', 14,'SSD Crucial MX500',            'Komponen',  2,  780000, 1560000,'2024-08-13','Yogyakarta', 'done'),
+('SO076', 16,'Laptop Surface Pro',           'Elektronik',1,20000000,20000000,'2024-08-16','Bandung',    'done'),
+('SO077', 18,'Keyboard Razer BlackWidow',    'Aksesoris', 1, 1950000, 1950000,'2024-08-19','Surabaya',   'cancelled'),
+('SO078', 20,'Webcam Logitech Brio',         'Aksesoris', 1, 1700000, 1700000,'2024-08-22','Pusat',      'done'),
+('SO079',  1,'Printer Epson EcoTank',        'Elektronik',1, 3400000, 3400000,'2024-08-25','Pusat',      'done'),
+('SO080',  3,'Hub USB-C Anker',              'Aksesoris', 2,  350000,  700000,'2024-08-28','Pusat',      'done'),
+('SO081',  5,'Laptop HP EliteBook',          'Elektronik',1,16000000,16000000,'2024-09-02','Selatan',    'done'),
+('SO082',  7,'Monitor Samsung 32 inch',      'Elektronik',1, 5200000, 5200000,'2024-09-05','Surabaya',   'done'),
+('SO083',  9,'RAM DDR4 16GB Kingston',       'Komponen',  2,  600000, 1200000,'2024-09-08','Yogyakarta', 'done'),
+('SO084', 11,'Mouse Wireless HP',            'Aksesoris', 1,  320000,  320000,'2024-09-11','Bandung',    'done'),
+('SO085', 13,'Laptop Dell Latitude',         'Elektronik',1,15500000,15500000,'2024-09-14','Surabaya',   'cancelled'),
+('SO086', 15,'SSD Seagate FireCuda',         'Komponen',  1, 1600000, 1600000,'2024-09-17','Pusat',      'done'),
+('SO087', 17,'Keyboard Apple Magic',         'Aksesoris', 1, 1400000, 1400000,'2024-09-20','Selatan',    'done'),
+('SO088', 19,'Speaker Marshall Acton',       'Aksesoris', 1, 4500000, 4500000,'2024-09-23','Yogyakarta', 'cancelled'),
+('SO089',  2,'Laptop Razer Blade',           'Elektronik',1,25000000,25000000,'2024-09-26','Bandung',    'done'),
+('SO090',  4,'Webcam Microsoft Surface',     'Aksesoris', 1, 1250000, 1250000,'2024-09-29','Surabaya',   'done'),
+('SO091',  6,'Monitor LG 32 inch 4K',        'Elektronik',1, 9200000, 9200000,'2024-10-02','Bandung',    'done'),
+('SO092',  8,'Laptop Lenovo IdeaPad Gaming', 'Elektronik',1,13000000,13000000,'2024-10-05','Pusat',      'done'),
+('SO093', 10,'Keyboard Ducky One 3',         'Aksesoris', 1, 1750000, 1750000,'2024-10-08','Selatan',    'cancelled'),
+('SO094', 12,'SSD NVMe WD 2TB',              'Komponen',  1, 2200000, 2200000,'2024-10-11','Pusat',      'done'),
+('SO095', 14,'Headset Audio-Technica ATH',   'Aksesoris', 1, 1900000, 1900000,'2024-10-14','Yogyakarta', 'done'),
+('SO096', 16,'Laptop HP Omen',               'Elektronik',1,18500000,18500000,'2024-10-17','Bandung',    'done'),
+('SO097', 18,'RAM DDR5 64GB',                'Komponen',  1, 3500000, 3500000,'2024-10-20','Surabaya',   'done'),
+('SO098', 20,'Mouse Apple Magic',            'Aksesoris', 1, 1050000, 1050000,'2024-10-23','Pusat',      'done'),
+('SO099',  1,'Printer Canon imageCLASS',     'Elektronik',1, 4200000, 4200000,'2024-10-26','Pusat',      'cancelled'),
+('SO100',  3,'Cooling Pad RGB',              'Aksesoris', 1,  380000,  380000,'2024-10-29','Pusat',      'done');
 
 COMMENT ON SCHEMA odoo_sim IS 'Simulasi sumber data ERP Odoo (Data Warehouse ada di ClickHouse)';
