@@ -99,3 +99,103 @@ SO097,C018,RAM DDR5 64GB,Komponen,1,3500000,3500000,2024-10-20,Surabaya,done
 SO098,C020,Mouse Apple Magic,Aksesoris,1,1050000,1050000,2024-10-23,Pusat,done
 SO099,C001,Printer Canon imageCLASS,Elektronik,1,4200000,4200000,2024-10-26,Pusat,cancelled
 SO100,C003,Cooling Pad RGB,Aksesoris,1,380000,380000,2024-10-29,Pusat,done
+SO101,C001,Keyboard Logitech K120,Aksesoris,1,250000,250000,2024-11-02,Pusat,done
+SO102,C001,SSD Kingston A400 240GB,Komponen,1,450000,450000,2024-11-05,Pusat,done
+SO103,C001,Mouse Logitech M100,Aksesoris,1,120000,120000,2024-11-08,Pusat,done
+SO104,C001,RAM DDR4 8GB Corsair,Komponen,1,380000,380000,2024-11-11,Pusat,done
+SO105,C001,Headset Logitech H390,Aksesoris,1,280000,280000,2024-11-14,Pusat,done
+SO106,C002,Monitor ViewSonic VA2406,Elektronik,1,1800000,1800000,2024-11-02,Bandung,done
+SO107,C002,Keyboard Logitech K120,Aksesoris,1,250000,250000,2024-11-06,Bandung,done
+SO108,C002,SSD WD Green 480GB,Komponen,1,550000,550000,2024-11-10,Bandung,done
+SO109,C002,RAM DDR4 16GB Kingston,Komponen,1,650000,650000,2024-11-14,Bandung,done
+SO110,C002,Hub USB 3.0 Ugreen,Aksesoris,1,180000,180000,2024-11-18,Bandung,done
+SO111,C003,Laptop HP 14s,Elektronik,1,6500000,6500000,2024-11-03,Pusat,cancelled
+SO112,C003,Keyboard Microsoft 600,Aksesoris,1,200000,200000,2024-11-07,Pusat,done
+SO113,C003,SSD Crucial BX500 480GB,Komponen,1,480000,480000,2024-11-11,Pusat,done
+SO114,C003,Mouse HP X500,Aksesoris,1,130000,130000,2024-11-15,Pusat,done
+SO115,C003,RAM DDR4 8GB Corsair,Komponen,1,380000,380000,2024-11-19,Pusat,done
+SO116,C004,Mouse Lenovo 300,Aksesoris,1,100000,100000,2024-11-03,Surabaya,done
+SO117,C004,RAM DDR4 8GB Corsair,Komponen,1,380000,380000,2024-11-07,Surabaya,done
+SO118,C004,Monitor AOC 22 inch,Elektronik,1,1500000,1500000,2024-11-11,Surabaya,done
+SO119,C004,Laptop ASUS A15,Elektronik,1,7500000,7500000,2024-11-15,Surabaya,cancelled
+SO120,C004,Printer HP DeskJet 2700,Elektronik,1,800000,800000,2024-11-19,Surabaya,done
+SO121,C005,Keyboard Logitech K200,Aksesoris,1,280000,280000,2024-11-04,Selatan,done
+SO122,C005,Monitor LG 24MK430,Elektronik,1,1900000,1900000,2024-11-08,Selatan,done
+SO123,C005,RAM DDR4 16GB Kingston,Komponen,1,650000,650000,2024-11-12,Selatan,done
+SO124,C005,Mouse HP X500,Aksesoris,1,130000,130000,2024-11-16,Selatan,done
+SO125,C005,Webcam Logitech C505,Elektronik,1,650000,650000,2024-11-20,Selatan,done
+SO126,C006,Keyboard Logitech K120,Aksesoris,1,250000,250000,2024-11-04,Bandung,done
+SO127,C006,RAM DDR4 16GB Kingston,Komponen,1,650000,650000,2024-11-08,Bandung,done
+SO128,C006,Mouse Logitech M100,Aksesoris,1,120000,120000,2024-11-12,Bandung,done
+SO129,C006,Webcam Microsoft 720p,Elektronik,1,700000,700000,2024-11-16,Bandung,done
+SO130,C006,Hub USB 3.0 Ugreen,Aksesoris,1,180000,180000,2024-11-20,Bandung,done
+SO131,C007,SSD Kingston A400 240GB,Komponen,1,450000,450000,2024-11-04,Surabaya,done
+SO132,C007,Mouse HP X500,Aksesoris,1,130000,130000,2024-11-08,Surabaya,done
+SO133,C007,Headset Logitech H390,Aksesoris,1,280000,280000,2024-11-12,Surabaya,done
+SO134,C007,Laptop Lenovo IdeaPad 3,Elektronik,1,6800000,6800000,2024-11-16,Surabaya,cancelled
+SO135,C007,RAM DDR4 8GB Corsair,Komponen,1,380000,380000,2024-11-20,Surabaya,done
+SO136,C008,Monitor ViewSonic VA2406,Elektronik,1,1800000,1800000,2024-11-05,Pusat,done
+SO137,C008,RAM DDR4 16GB Kingston,Komponen,1,650000,650000,2024-11-09,Pusat,done
+SO138,C008,Mouse Logitech M100,Aksesoris,1,120000,120000,2024-11-13,Pusat,done
+SO139,C008,Headset Sennheiser PC8,Aksesoris,1,450000,450000,2024-11-17,Pusat,done
+SO140,C008,Webcam Logitech C505,Elektronik,1,650000,650000,2024-11-21,Pusat,done
+SO141,C009,SSD WD Green 480GB,Komponen,1,550000,550000,2024-11-05,Yogyakarta,done
+SO142,C009,Monitor LG 24MK430,Elektronik,1,1900000,1900000,2024-11-09,Yogyakarta,done
+SO143,C009,Speaker Logitech Z207,Aksesoris,1,350000,350000,2024-11-13,Yogyakarta,done
+SO144,C009,Webcam Microsoft 720p,Elektronik,1,700000,700000,2024-11-17,Yogyakarta,done
+SO145,C009,Hub USB 3.0 Ugreen,Aksesoris,1,180000,180000,2024-11-21,Yogyakarta,done
+SO146,C010,Keyboard Logitech K120,Aksesoris,1,250000,250000,2024-11-05,Selatan,done
+SO147,C010,SSD Kingston A400 240GB,Komponen,1,450000,450000,2024-11-09,Selatan,done
+SO148,C010,Laptop Acer Aspire 3,Elektronik,1,6200000,6200000,2024-11-13,Selatan,cancelled
+SO149,C010,Monitor AOC 22 inch,Elektronik,1,1500000,1500000,2024-11-17,Selatan,done
+SO150,C010,RAM DDR4 8GB Corsair,Komponen,1,380000,380000,2024-11-21,Selatan,done
+SO151,C011,Keyboard Logitech K200,Aksesoris,1,280000,280000,2024-11-06,Bandung,done
+SO152,C011,Monitor ViewSonic VA2406,Elektronik,1,1800000,1800000,2024-11-10,Bandung,cancelled
+SO153,C011,Headset Logitech H390,Aksesoris,1,280000,280000,2024-11-14,Bandung,done
+SO154,C011,Webcam Logitech C505,Elektronik,1,650000,650000,2024-11-18,Bandung,done
+SO155,C011,Hub USB 3.0 Ugreen,Aksesoris,1,180000,180000,2024-11-22,Bandung,done
+SO156,C012,Laptop ASUS A15,Elektronik,1,7500000,7500000,2024-11-06,Pusat,cancelled
+SO157,C012,Keyboard Microsoft 600,Aksesoris,1,200000,200000,2024-11-10,Pusat,done
+SO158,C012,Mouse Lenovo 300,Aksesoris,1,100000,100000,2024-11-14,Pusat,done
+SO159,C012,Webcam Microsoft 720p,Elektronik,1,700000,700000,2024-11-18,Pusat,done
+SO160,C012,Hub USB 3.0 Ugreen,Aksesoris,1,180000,180000,2024-11-22,Pusat,done
+SO161,C013,Keyboard Logitech K120,Aksesoris,1,250000,250000,2024-11-06,Surabaya,done
+SO162,C013,Speaker Logitech Z207,Aksesoris,1,350000,350000,2024-11-10,Surabaya,done
+SO163,C013,SSD Crucial BX500 480GB,Komponen,1,480000,480000,2024-11-14,Surabaya,done
+SO164,C013,Mouse HP X500,Aksesoris,1,130000,130000,2024-11-18,Surabaya,done
+SO165,C013,Laptop Lenovo IdeaPad 3,Elektronik,1,6800000,6800000,2024-11-22,Surabaya,cancelled
+SO166,C014,Keyboard Microsoft 600,Aksesoris,1,200000,200000,2024-11-07,Yogyakarta,done
+SO167,C014,RAM DDR4 8GB Corsair,Komponen,1,380000,380000,2024-11-11,Yogyakarta,done
+SO168,C014,Mouse Logitech M100,Aksesoris,1,120000,120000,2024-11-15,Yogyakarta,done
+SO169,C014,Laptop HP 14s,Elektronik,1,6500000,6500000,2024-11-19,Yogyakarta,cancelled
+SO170,C014,Monitor LG 24MK430,Elektronik,1,1900000,1900000,2024-11-23,Yogyakarta,done
+SO171,C015,Keyboard Logitech K200,Aksesoris,1,280000,280000,2024-11-07,Pusat,done
+SO172,C015,Monitor ViewSonic VA2406,Elektronik,1,1800000,1800000,2024-11-11,Pusat,done
+SO173,C015,Headset Logitech H390,Aksesoris,1,280000,280000,2024-11-15,Pusat,done
+SO174,C015,Mouse Lenovo 300,Aksesoris,1,100000,100000,2024-11-19,Pusat,done
+SO175,C015,Webcam Logitech C505,Elektronik,1,650000,650000,2024-11-23,Pusat,done
+SO176,C016,Monitor AOC 22 inch,Elektronik,1,1500000,1500000,2024-11-07,Bandung,cancelled
+SO177,C016,Keyboard Logitech K120,Aksesoris,1,250000,250000,2024-11-11,Bandung,done
+SO178,C016,SSD WD Green 480GB,Komponen,1,550000,550000,2024-11-15,Bandung,done
+SO179,C016,Mouse HP X500,Aksesoris,1,130000,130000,2024-11-19,Bandung,done
+SO180,C016,RAM DDR4 16GB Kingston,Komponen,1,650000,650000,2024-11-23,Bandung,done
+SO181,C017,SSD Kingston A400 240GB,Komponen,1,450000,450000,2024-11-08,Selatan,done
+SO182,C017,Headset Sennheiser PC8,Aksesoris,1,450000,450000,2024-11-12,Selatan,done
+SO183,C017,Laptop HP 14s,Elektronik,1,6500000,6500000,2024-11-16,Selatan,cancelled
+SO184,C017,Mouse Logitech M100,Aksesoris,1,120000,120000,2024-11-20,Selatan,done
+SO185,C017,Webcam Logitech C505,Elektronik,1,650000,650000,2024-11-24,Selatan,done
+SO186,C018,Mouse Logitech M100,Aksesoris,1,120000,120000,2024-11-08,Surabaya,done
+SO187,C018,Monitor LG 24MK430,Elektronik,1,1900000,1900000,2024-11-12,Surabaya,done
+SO188,C018,Laptop Acer Aspire 3,Elektronik,1,6200000,6200000,2024-11-16,Surabaya,cancelled
+SO189,C018,Speaker Logitech Z207,Aksesoris,1,350000,350000,2024-11-20,Surabaya,done
+SO190,C018,Webcam Microsoft 720p,Elektronik,1,700000,700000,2024-11-24,Surabaya,done
+SO191,C019,SSD WD Green 480GB,Komponen,1,550000,550000,2024-11-09,Yogyakarta,done
+SO192,C019,RAM DDR4 8GB Corsair,Komponen,1,380000,380000,2024-11-13,Yogyakarta,done
+SO193,C019,Mouse Lenovo 300,Aksesoris,1,100000,100000,2024-11-17,Yogyakarta,done
+SO194,C019,Laptop ASUS A15,Elektronik,1,7500000,7500000,2024-11-21,Yogyakarta,cancelled
+SO195,C019,Monitor AOC 22 inch,Elektronik,1,1500000,1500000,2024-11-25,Yogyakarta,done
+SO196,C020,Keyboard Microsoft 600,Aksesoris,1,200000,200000,2024-11-09,Pusat,done
+SO197,C020,RAM DDR5 8GB Team,Komponen,1,450000,450000,2024-11-13,Pusat,done
+SO198,C020,Laptop Lenovo IdeaPad 3,Elektronik,1,6800000,6800000,2024-11-17,Pusat,cancelled
+SO199,C020,Headset Logitech H390,Aksesoris,1,280000,280000,2024-11-21,Pusat,done
+SO200,C020,Hub USB 3.0 Ugreen,Aksesoris,1,180000,180000,2024-11-25,Pusat,done

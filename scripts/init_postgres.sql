@@ -164,4 +164,129 @@ INSERT INTO odoo_sim.sale_order (name, partner_id, product_name, category, quant
 ('SO099',  1,'Printer Canon imageCLASS',     'Elektronik',1, 4200000, 4200000,'2024-10-26','Pusat',      'cancelled'),
 ('SO100',  3,'Cooling Pad RGB',              'Aksesoris', 1,  380000,  380000,'2024-10-29','Pusat',      'done');
 
+-- 100 Sales Order tambahan (SO101–SO200) — setiap customer beli 5 product_type baru
+-- Tujuan: memperkaya basket MBA agar FP-Growth menghasilkan rules yang bermakna
+-- Cancelled: SO111,119,134,148,152,156,165,169,176,183,188,194,198 (13 rows)
+INSERT INTO odoo_sim.sale_order (name, partner_id, product_name, category, quantity, unit_price, amount_total, date_order, branch, state) VALUES
+-- C001 (Andi): + Keyboard, SSD, Mouse, RAM, Headset
+('SO101', 1,'Keyboard Logitech K120',    'Aksesoris', 1,  250000,  250000,'2024-11-02','Pusat',      'done'),
+('SO102', 1,'SSD Kingston A400 240GB',   'Komponen',  1,  450000,  450000,'2024-11-05','Pusat',      'done'),
+('SO103', 1,'Mouse Logitech M100',       'Aksesoris', 1,  120000,  120000,'2024-11-08','Pusat',      'done'),
+('SO104', 1,'RAM DDR4 8GB Corsair',      'Komponen',  1,  380000,  380000,'2024-11-11','Pusat',      'done'),
+('SO105', 1,'Headset Logitech H390',     'Aksesoris', 1,  280000,  280000,'2024-11-14','Pusat',      'done'),
+-- C002 (Budi): + Monitor, Keyboard, SSD, RAM, Hub
+('SO106', 2,'Monitor ViewSonic VA2406',  'Elektronik',1, 1800000, 1800000,'2024-11-02','Bandung',    'done'),
+('SO107', 2,'Keyboard Logitech K120',    'Aksesoris', 1,  250000,  250000,'2024-11-06','Bandung',    'done'),
+('SO108', 2,'SSD WD Green 480GB',        'Komponen',  1,  550000,  550000,'2024-11-10','Bandung',    'done'),
+('SO109', 2,'RAM DDR4 16GB Kingston',    'Komponen',  1,  650000,  650000,'2024-11-14','Bandung',    'done'),
+('SO110', 2,'Hub USB 3.0 Ugreen',        'Aksesoris', 1,  180000,  180000,'2024-11-18','Bandung',    'done'),
+-- C003 (Citra): + Laptop(c), Keyboard, SSD, Mouse, RAM
+('SO111', 3,'Laptop HP 14s',             'Elektronik',1, 6500000, 6500000,'2024-11-03','Pusat',      'cancelled'),
+('SO112', 3,'Keyboard Microsoft 600',    'Aksesoris', 1,  200000,  200000,'2024-11-07','Pusat',      'done'),
+('SO113', 3,'SSD Crucial BX500 480GB',   'Komponen',  1,  480000,  480000,'2024-11-11','Pusat',      'done'),
+('SO114', 3,'Mouse HP X500',             'Aksesoris', 1,  130000,  130000,'2024-11-15','Pusat',      'done'),
+('SO115', 3,'RAM DDR4 8GB Corsair',      'Komponen',  1,  380000,  380000,'2024-11-19','Pusat',      'done'),
+-- C004 (Dian): + Mouse, RAM, Monitor, Laptop(c), Printer
+('SO116', 4,'Mouse Lenovo 300',          'Aksesoris', 1,  100000,  100000,'2024-11-03','Surabaya',   'done'),
+('SO117', 4,'RAM DDR4 8GB Corsair',      'Komponen',  1,  380000,  380000,'2024-11-07','Surabaya',   'done'),
+('SO118', 4,'Monitor AOC 22 inch',       'Elektronik',1, 1500000, 1500000,'2024-11-11','Surabaya',   'done'),
+('SO119', 4,'Laptop ASUS A15',           'Elektronik',1, 7500000, 7500000,'2024-11-15','Surabaya',   'cancelled'),
+('SO120', 4,'Printer HP DeskJet 2700',   'Elektronik',1,  800000,  800000,'2024-11-19','Surabaya',   'done'),
+-- C005 (Eka): + Keyboard, Monitor, RAM, Mouse, Webcam
+('SO121', 5,'Keyboard Logitech K200',    'Aksesoris', 1,  280000,  280000,'2024-11-04','Selatan',    'done'),
+('SO122', 5,'Monitor LG 24MK430',        'Elektronik',1, 1900000, 1900000,'2024-11-08','Selatan',    'done'),
+('SO123', 5,'RAM DDR4 16GB Kingston',    'Komponen',  1,  650000,  650000,'2024-11-12','Selatan',    'done'),
+('SO124', 5,'Mouse HP X500',             'Aksesoris', 1,  130000,  130000,'2024-11-16','Selatan',    'done'),
+('SO125', 5,'Webcam Logitech C505',      'Elektronik',1,  650000,  650000,'2024-11-20','Selatan',    'done'),
+-- C006 (Fajar): + Keyboard, RAM, Mouse, Webcam, Hub
+('SO126', 6,'Keyboard Logitech K120',    'Aksesoris', 1,  250000,  250000,'2024-11-04','Bandung',    'done'),
+('SO127', 6,'RAM DDR4 16GB Kingston',    'Komponen',  1,  650000,  650000,'2024-11-08','Bandung',    'done'),
+('SO128', 6,'Mouse Logitech M100',       'Aksesoris', 1,  120000,  120000,'2024-11-12','Bandung',    'done'),
+('SO129', 6,'Webcam Microsoft 720p',     'Elektronik',1,  700000,  700000,'2024-11-16','Bandung',    'done'),
+('SO130', 6,'Hub USB 3.0 Ugreen',        'Aksesoris', 1,  180000,  180000,'2024-11-20','Bandung',    'done'),
+-- C007 (Gita): + SSD, Mouse, Headset, Laptop(c), RAM
+('SO131', 7,'SSD Kingston A400 240GB',   'Komponen',  1,  450000,  450000,'2024-11-04','Surabaya',   'done'),
+('SO132', 7,'Mouse HP X500',             'Aksesoris', 1,  130000,  130000,'2024-11-08','Surabaya',   'done'),
+('SO133', 7,'Headset Logitech H390',     'Aksesoris', 1,  280000,  280000,'2024-11-12','Surabaya',   'done'),
+('SO134', 7,'Laptop Lenovo IdeaPad 3',   'Elektronik',1, 6800000, 6800000,'2024-11-16','Surabaya',   'cancelled'),
+('SO135', 7,'RAM DDR4 8GB Corsair',      'Komponen',  1,  380000,  380000,'2024-11-20','Surabaya',   'done'),
+-- C008 (Hendra): + Monitor, RAM, Mouse, Headset, Webcam
+('SO136', 8,'Monitor ViewSonic VA2406',  'Elektronik',1, 1800000, 1800000,'2024-11-05','Pusat',      'done'),
+('SO137', 8,'RAM DDR4 16GB Kingston',    'Komponen',  1,  650000,  650000,'2024-11-09','Pusat',      'done'),
+('SO138', 8,'Mouse Logitech M100',       'Aksesoris', 1,  120000,  120000,'2024-11-13','Pusat',      'done'),
+('SO139', 8,'Headset Sennheiser PC8',    'Aksesoris', 1,  450000,  450000,'2024-11-17','Pusat',      'done'),
+('SO140', 8,'Webcam Logitech C505',      'Elektronik',1,  650000,  650000,'2024-11-21','Pusat',      'done'),
+-- C009 (Indah): + SSD, Monitor, Speaker, Webcam, Hub
+('SO141', 9,'SSD WD Green 480GB',        'Komponen',  1,  550000,  550000,'2024-11-05','Yogyakarta', 'done'),
+('SO142', 9,'Monitor LG 24MK430',        'Elektronik',1, 1900000, 1900000,'2024-11-09','Yogyakarta', 'done'),
+('SO143', 9,'Speaker Logitech Z207',     'Aksesoris', 1,  350000,  350000,'2024-11-13','Yogyakarta', 'done'),
+('SO144', 9,'Webcam Microsoft 720p',     'Elektronik',1,  700000,  700000,'2024-11-17','Yogyakarta', 'done'),
+('SO145', 9,'Hub USB 3.0 Ugreen',        'Aksesoris', 1,  180000,  180000,'2024-11-21','Yogyakarta', 'done'),
+-- C010 (Joko): + Keyboard, SSD, Laptop(c), Monitor, RAM
+('SO146',10,'Keyboard Logitech K120',    'Aksesoris', 1,  250000,  250000,'2024-11-05','Selatan',    'done'),
+('SO147',10,'SSD Kingston A400 240GB',   'Komponen',  1,  450000,  450000,'2024-11-09','Selatan',    'done'),
+('SO148',10,'Laptop Acer Aspire 3',      'Elektronik',1, 6200000, 6200000,'2024-11-13','Selatan',    'cancelled'),
+('SO149',10,'Monitor AOC 22 inch',       'Elektronik',1, 1500000, 1500000,'2024-11-17','Selatan',    'done'),
+('SO150',10,'RAM DDR4 8GB Corsair',      'Komponen',  1,  380000,  380000,'2024-11-21','Selatan',    'done'),
+-- C011 (Kartika): + Keyboard, Monitor(c), Headset, Webcam, Hub
+('SO151',11,'Keyboard Logitech K200',    'Aksesoris', 1,  280000,  280000,'2024-11-06','Bandung',    'done'),
+('SO152',11,'Monitor ViewSonic VA2406',  'Elektronik',1, 1800000, 1800000,'2024-11-10','Bandung',    'cancelled'),
+('SO153',11,'Headset Logitech H390',     'Aksesoris', 1,  280000,  280000,'2024-11-14','Bandung',    'done'),
+('SO154',11,'Webcam Logitech C505',      'Elektronik',1,  650000,  650000,'2024-11-18','Bandung',    'done'),
+('SO155',11,'Hub USB 3.0 Ugreen',        'Aksesoris', 1,  180000,  180000,'2024-11-22','Bandung',    'done'),
+-- C012 (Lukman): + Laptop(c), Keyboard, Mouse, Webcam, Hub
+('SO156',12,'Laptop ASUS A15',           'Elektronik',1, 7500000, 7500000,'2024-11-06','Pusat',      'cancelled'),
+('SO157',12,'Keyboard Microsoft 600',    'Aksesoris', 1,  200000,  200000,'2024-11-10','Pusat',      'done'),
+('SO158',12,'Mouse Lenovo 300',          'Aksesoris', 1,  100000,  100000,'2024-11-14','Pusat',      'done'),
+('SO159',12,'Webcam Microsoft 720p',     'Elektronik',1,  700000,  700000,'2024-11-18','Pusat',      'done'),
+('SO160',12,'Hub USB 3.0 Ugreen',        'Aksesoris', 1,  180000,  180000,'2024-11-22','Pusat',      'done'),
+-- C013 (Maya): + Keyboard, Speaker, SSD, Mouse, Laptop(c)
+('SO161',13,'Keyboard Logitech K120',    'Aksesoris', 1,  250000,  250000,'2024-11-06','Surabaya',   'done'),
+('SO162',13,'Speaker Logitech Z207',     'Aksesoris', 1,  350000,  350000,'2024-11-10','Surabaya',   'done'),
+('SO163',13,'SSD Crucial BX500 480GB',   'Komponen',  1,  480000,  480000,'2024-11-14','Surabaya',   'done'),
+('SO164',13,'Mouse HP X500',             'Aksesoris', 1,  130000,  130000,'2024-11-18','Surabaya',   'done'),
+('SO165',13,'Laptop Lenovo IdeaPad 3',   'Elektronik',1, 6800000, 6800000,'2024-11-22','Surabaya',   'cancelled'),
+-- C014 (Novan): + Keyboard, RAM, Mouse, Laptop(c), Monitor
+('SO166',14,'Keyboard Microsoft 600',    'Aksesoris', 1,  200000,  200000,'2024-11-07','Yogyakarta', 'done'),
+('SO167',14,'RAM DDR4 8GB Corsair',      'Komponen',  1,  380000,  380000,'2024-11-11','Yogyakarta', 'done'),
+('SO168',14,'Mouse Logitech M100',       'Aksesoris', 1,  120000,  120000,'2024-11-15','Yogyakarta', 'done'),
+('SO169',14,'Laptop HP 14s',             'Elektronik',1, 6500000, 6500000,'2024-11-19','Yogyakarta', 'cancelled'),
+('SO170',14,'Monitor LG 24MK430',        'Elektronik',1, 1900000, 1900000,'2024-11-23','Yogyakarta', 'done'),
+-- C015 (Okta): + Keyboard, Monitor, Headset, Mouse, Webcam
+('SO171',15,'Keyboard Logitech K200',    'Aksesoris', 1,  280000,  280000,'2024-11-07','Pusat',      'done'),
+('SO172',15,'Monitor ViewSonic VA2406',  'Elektronik',1, 1800000, 1800000,'2024-11-11','Pusat',      'done'),
+('SO173',15,'Headset Logitech H390',     'Aksesoris', 1,  280000,  280000,'2024-11-15','Pusat',      'done'),
+('SO174',15,'Mouse Lenovo 300',          'Aksesoris', 1,  100000,  100000,'2024-11-19','Pusat',      'done'),
+('SO175',15,'Webcam Logitech C505',      'Elektronik',1,  650000,  650000,'2024-11-23','Pusat',      'done'),
+-- C016 (Putra): + Monitor(c), Keyboard, SSD, Mouse, RAM
+('SO176',16,'Monitor AOC 22 inch',       'Elektronik',1, 1500000, 1500000,'2024-11-07','Bandung',    'cancelled'),
+('SO177',16,'Keyboard Logitech K120',    'Aksesoris', 1,  250000,  250000,'2024-11-11','Bandung',    'done'),
+('SO178',16,'SSD WD Green 480GB',        'Komponen',  1,  550000,  550000,'2024-11-15','Bandung',    'done'),
+('SO179',16,'Mouse HP X500',             'Aksesoris', 1,  130000,  130000,'2024-11-19','Bandung',    'done'),
+('SO180',16,'RAM DDR4 16GB Kingston',    'Komponen',  1,  650000,  650000,'2024-11-23','Bandung',    'done'),
+-- C017 (Rini): + SSD, Headset, Laptop(c), Mouse, Webcam
+('SO181',17,'SSD Kingston A400 240GB',   'Komponen',  1,  450000,  450000,'2024-11-08','Selatan',    'done'),
+('SO182',17,'Headset Sennheiser PC8',    'Aksesoris', 1,  450000,  450000,'2024-11-12','Selatan',    'done'),
+('SO183',17,'Laptop HP 14s',             'Elektronik',1, 6500000, 6500000,'2024-11-16','Selatan',    'cancelled'),
+('SO184',17,'Mouse Logitech M100',       'Aksesoris', 1,  120000,  120000,'2024-11-20','Selatan',    'done'),
+('SO185',17,'Webcam Logitech C505',      'Elektronik',1,  650000,  650000,'2024-11-24','Selatan',    'done'),
+-- C018 (Sandi): + Mouse, Monitor, Laptop(c), Speaker, Webcam
+('SO186',18,'Mouse Logitech M100',       'Aksesoris', 1,  120000,  120000,'2024-11-08','Surabaya',   'done'),
+('SO187',18,'Monitor LG 24MK430',        'Elektronik',1, 1900000, 1900000,'2024-11-12','Surabaya',   'done'),
+('SO188',18,'Laptop Acer Aspire 3',      'Elektronik',1, 6200000, 6200000,'2024-11-16','Surabaya',   'cancelled'),
+('SO189',18,'Speaker Logitech Z207',     'Aksesoris', 1,  350000,  350000,'2024-11-20','Surabaya',   'done'),
+('SO190',18,'Webcam Microsoft 720p',     'Elektronik',1,  700000,  700000,'2024-11-24','Surabaya',   'done'),
+-- C019 (Tari): + SSD, RAM, Mouse, Laptop(c), Monitor
+('SO191',19,'SSD WD Green 480GB',        'Komponen',  1,  550000,  550000,'2024-11-09','Yogyakarta', 'done'),
+('SO192',19,'RAM DDR4 8GB Corsair',      'Komponen',  1,  380000,  380000,'2024-11-13','Yogyakarta', 'done'),
+('SO193',19,'Mouse Lenovo 300',          'Aksesoris', 1,  100000,  100000,'2024-11-17','Yogyakarta', 'done'),
+('SO194',19,'Laptop ASUS A15',           'Elektronik',1, 7500000, 7500000,'2024-11-21','Yogyakarta', 'cancelled'),
+('SO195',19,'Monitor AOC 22 inch',       'Elektronik',1, 1500000, 1500000,'2024-11-25','Yogyakarta', 'done'),
+-- C020 (Umar): + Keyboard, RAM, Laptop(c), Headset, Hub
+('SO196',20,'Keyboard Microsoft 600',    'Aksesoris', 1,  200000,  200000,'2024-11-09','Pusat',      'done'),
+('SO197',20,'RAM DDR5 8GB Team',         'Komponen',  1,  450000,  450000,'2024-11-13','Pusat',      'done'),
+('SO198',20,'Laptop Lenovo IdeaPad 3',   'Elektronik',1, 6800000, 6800000,'2024-11-17','Pusat',      'cancelled'),
+('SO199',20,'Headset Logitech H390',     'Aksesoris', 1,  280000,  280000,'2024-11-21','Pusat',      'done'),
+('SO200',20,'Hub USB 3.0 Ugreen',        'Aksesoris', 1,  180000,  180000,'2024-11-25','Pusat',      'done');
+
 COMMENT ON SCHEMA odoo_sim IS 'Simulasi sumber data ERP Odoo (Data Warehouse ada di ClickHouse)';
