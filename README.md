@@ -57,8 +57,8 @@ Lihat detail di [`docs/architecture.md`](docs/architecture.md).
 ## Domain Bisnis
 
 **Sales & Customer Insight** — toko elektronik multi-cabang:
-- 50 transaksi penjualan (sample)
-- 20 customer
+- 200 transaksi penjualan (sample), Jan–Nov 2024
+- 20 customer, 167 done / 33 cancelled (16.5%)
 - 30 ulasan Google
 - Target penjualan bulanan per cabang
 
@@ -187,16 +187,39 @@ Jika semua cell hijau (tidak error), lanjutkan ke notebook berikutnya.
 
 ### Notebook yang Tersedia
 
-| # | Notebook | Teknik | Sumber Data |
-|---|----------|--------|-------------|
-| 00 | `00_setup_verification.ipynb`     | Cek koneksi ClickHouse & MLflow | — |
-| 01 | `01_clustering_customer_rfm.ipynb`| K-Means, RFM Segmentation       | `silver.silver_sales` |
-| 02 | `02_classification_order_status.ipynb` | Random Forest, ROC-AUC     | `silver.silver_sales` |
-| 03 | `03_regression_revenue_forecast.ipynb` | Linear/Ridge, TimeSeriesSplit | `gold.gold_sales_daily` |
-| 04 | `04_association_market_basket.ipynb`   | FP-Growth, Association Rules  | `silver.silver_sales` |
+| # | Notebook | Teknik | Sumber Data | Status |
+|---|----------|--------|-------------|--------|
+| 00 | `00_setup_verification.ipynb`          | Cek koneksi ClickHouse & MLflow        | —                       | ✅ |
+| 01 | `01_clustering_customer_rfm.ipynb`     | K-Means, RFM Segmentation              | `silver.silver_sales`   | ✅ |
+| 02 | `02_classification_order_status.ipynb` | Random Forest, ROC-AUC (binary)        | `silver.silver_sales`   | ✅ |
+| 03 | `03_regression_revenue_forecast.ipynb` | Linear/Ridge Regression, TimeSeriesSplit | `gold.gold_sales_daily` | ✅ |
+| 04 | `04_association_market_basket.ipynb`   | FP-Growth, Association Rules           | `silver.silver_sales`   | ✅ |
 
 Semua notebook (01–04) mencatat parameter, metrik, dan model ke MLflow secara otomatis.
 Hasil eksperimen dapat dilihat di http://localhost:5000.
+
+#### Catatan Implementasi per Notebook
+
+**NB 01 — Clustering (K-Means RFM)**
+- Segmentasi pelanggan berdasarkan Recency, Frequency, Monetary
+- Query dari `silver.silver_sales WHERE status='done'`
+- Hasil: 3 cluster (High Value, Regular, Low Engagement)
+
+**NB 02 — Classification (Random Forest)**
+- Target: prediksi `status` order (done=1 / cancelled=0)
+- Dataset: 200 order, 16.5% cancellation rate — class imbalance ditangani dengan `class_weight='balanced'`
+- Metrik: Accuracy, F1, ROC-AUC (binary `predict_proba[:, 1]`)
+
+**NB 03 — Regression (Revenue Forecast)**
+- Target: prediksi `total_revenue` harian
+- Fitur: lag features, rolling mean, hari dalam minggu/bulan
+- Validasi: TimeSeriesSplit (no data leakage)
+
+**NB 04 — Association Rules (FP-Growth)**
+- Unit basket: per `customer_id` (bukan per order — tiap order hanya 1 produk)
+- Item: `product_type` yang di-derive dari `product_name` (10 jenis: Laptop, Monitor, Keyboard, Mouse, Audio, Storage, Memory, Webcam, Peripheral, Printer)
+- `MIN_SUPPORT=0.15` (3/20 customer), `MIN_CONFIDENCE=0.5`, `MIN_LIFT=1.0`
+- Hasil: 9+ frequent 1-itemsets, 20+ 2-itemsets, puluhan association rules cross-selling
 
 ### Struktur Tambahan Fase 2
 
@@ -232,7 +255,7 @@ Minilab-EduBI/
 │
 ├── data/
 │   ├── raw/
-│   │   ├── sample_sales.csv        ← 50 transaksi
+│   │   ├── sample_sales.csv        ← 200 transaksi (fallback)
 │   │   ├── sample_customers.csv    ← 20 customer
 │   │   ├── sample_reviews.csv      ← 30 ulasan
 │   │   └── sample_targets.csv      ← target bulanan
@@ -318,7 +341,7 @@ Lihat panduan di [`docs/metabase_setup.md`](docs/metabase_setup.md).
 | Fase | Topik | Branch | Status |
 |------|-------|--------|--------|
 | 1 | BI Pipeline (ETL → dbt → Metabase) | `main` | ✅ Selesai |
-| 2 | Data Mining (Jupyter, MLflow, scikit-learn) | `fase2/data-mining` | 🚧 Aktif — nb 00 & 01 ✅ |
+| 2 | Data Mining (Jupyter, MLflow, scikit-learn) | `fase2/data-mining` | ✅ Selesai — nb 00–04 ✅ |
 | 3 | ML Deployment (FastAPI + MLflow serving) | `fase3/ml-deployment` | 📋 Planned |
 | 4 | Realtime Pipeline (Kafka + Flink) | `fase4/realtime-pipeline` | 📋 Planned |
 
@@ -336,7 +359,7 @@ Lihat panduan di [`docs/metabase_setup.md`](docs/metabase_setup.md).
 
 ## Catatan Keterbatasan PoC
 
-- Data sample kecil (50 transaksi), tidak representatif produksi
+- Data sample terbatas (200 transaksi, 20 customer), tidak representatif produksi
 - Tidak ada scheduling — pipeline dijalankan manual
 - ClickHouse default user (tanpa password) — hanya untuk demo lokal
 - Tidak ada autentikasi Metabase multi-user
