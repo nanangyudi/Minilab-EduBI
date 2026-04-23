@@ -1,11 +1,11 @@
 version: 2
 
 # ─────────────────────────────────────────────
-# Bronze Models
+# Bronze Models — Toko Elektronik (standard)
 # ─────────────────────────────────────────────
 models:
   - name: bronze_sales
-    description: "Tabel bronze: raw data penjualan dari sumber"
+    description: "Tabel bronze: raw data penjualan dari sumber (standard mode)"
     columns:
       - name: order_id
         tests:
@@ -13,7 +13,7 @@ models:
           - unique
 
   - name: bronze_customers
-    description: "Tabel bronze: raw data customer dari sumber"
+    description: "Tabel bronze: raw data customer dari sumber (standard mode)"
     columns:
       - name: customer_id
         tests:
@@ -21,7 +21,7 @@ models:
           - unique
 
   - name: bronze_reviews
-    description: "Tabel bronze: raw data ulasan Google"
+    description: "Tabel bronze: raw data ulasan Google (standard mode)"
     columns:
       - name: review_id
         tests:
@@ -29,7 +29,7 @@ models:
           - unique
 
   - name: bronze_targets
-    description: "Tabel bronze: raw data target penjualan"
+    description: "Tabel bronze: raw data target penjualan (standard mode)"
     columns:
       - name: target_id
         tests:
@@ -37,21 +37,76 @@ models:
           - unique
 
 # ─────────────────────────────────────────────
-# Silver Models
+# Bronze Models — Olist Brazilian E-Commerce
 # ─────────────────────────────────────────────
-  - name: silver_sales
-    description: "Tabel silver: penjualan yang sudah dibersihkan dan dikastip"
+  - name: bronze_olist_orders
+    description: "Tabel bronze: raw pesanan Olist"
     columns:
       - name: order_id
         tests:
           - not_null
           - unique
+
+  - name: bronze_olist_order_items
+    description: "Tabel bronze: raw item per pesanan Olist (1 order bisa banyak item)"
+    columns:
+      - name: order_id
+        tests:
+          - not_null
+
+  - name: bronze_olist_order_reviews
+    description: "Tabel bronze: raw ulasan pesanan Olist"
+    columns:
+      - name: review_id
+        tests:
+          - not_null
+          - unique
+
+  - name: bronze_olist_customers
+    description: "Tabel bronze: raw data pelanggan Olist"
+    columns:
+      - name: customer_id
+        tests:
+          - not_null
+          - unique
+
+  - name: bronze_olist_sellers
+    description: "Tabel bronze: raw data penjual Olist"
+    columns:
+      - name: seller_id
+        tests:
+          - not_null
+          - unique
+
+  - name: bronze_olist_products
+    description: "Tabel bronze: raw data produk Olist"
+    columns:
+      - name: product_id
+        tests:
+          - not_null
+          - unique
+
+# ─────────────────────────────────────────────
+# Silver Models — Olist mode
+# ─────────────────────────────────────────────
+  - name: silver_sales
+    description: "Tabel silver: data penjualan Olist (granularitas: per order item)"
+    columns:
+      - name: order_id
+        tests:
+          - not_null
+      - name: order_item_id
+        tests:
+          - not_null
       - name: total_price
+        tests:
+          - not_null
+      - name: seller_state
         tests:
           - not_null
 
   - name: silver_customers
-    description: "Tabel silver: customer yang sudah dinormalisasi"
+    description: "Tabel silver: pelanggan unik Olist (deduplikasi via customer_unique_id)"
     columns:
       - name: customer_id
         tests:
@@ -59,7 +114,7 @@ models:
           - unique
 
   - name: silver_reviews
-    description: "Tabel silver: ulasan yang sudah diparsing dan dikategorikan"
+    description: "Tabel silver: ulasan pesanan Olist yang sudah diparsing"
     columns:
       - name: review_id
         tests:
@@ -69,37 +124,36 @@ models:
         tests:
           - not_null
 
-  - name: silver_targets
-    description: "Tabel silver: target bulanan per cabang"
-    columns:
-      - name: target_id
-        tests:
-          - not_null
-          - unique
-
 # ─────────────────────────────────────────────
-# Gold Models
+# Gold Models — Olist mode
 # ─────────────────────────────────────────────
   - name: gold_sales_daily
-    description: "Agregasi penjualan harian per cabang"
+    description: "Agregasi penjualan harian per seller_state (Olist mode)"
     columns:
       - name: order_date
         tests:
           - not_null
-      - name: branch
+      - name: seller_state
         tests:
           - not_null
 
-  - name: gold_branch_kpi
-    description: "KPI per cabang: revenue, orders, rata-rata, pencapaian target"
+  - name: gold_seller_kpi
+    description: "KPI per seller_state: revenue, volume, metrik pengiriman (Olist mode)"
     columns:
-      - name: branch
+      - name: seller_state
         tests:
           - not_null
           - unique
 
+  - name: gold_delivery_kpi
+    description: "Metrik pengiriman per seller_state × kategori produk (Olist mode)"
+    columns:
+      - name: seller_state
+        tests:
+          - not_null
+
   - name: gold_review_summary
-    description: "Ringkasan ulasan per cabang"
+    description: "Ringkasan ulasan per customer_state (branch = customer_state di Olist mode)"
     columns:
       - name: branch
         tests:

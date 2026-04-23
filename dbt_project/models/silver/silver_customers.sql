@@ -1,30 +1,22 @@
--- silver_customers.sql
--- Silver layer: bersihkan dan standarisasi data customer
--- Transformasi:
---   - Trim whitespace, lowercase email
---   - Cast tanggal
---   - Tambah kolom customer_age_years
+-- silver_customers.sql (Olist mode — fase2/olist-ecommerce)
+-- Silver layer: data pelanggan unik dari Olist
+-- Deduplikasi menggunakan customer_unique_id (ID permanen lintas order)
+-- Catatan: 1 customer_unique_id dapat punya banyak customer_id (satu per order baru)
 
 {{ config(
     materialized = 'table',
     schema       = 'silver',
     engine       = 'MergeTree()',
-    order_by     = 'customer_id'
+    order_by     = '(customer_id)'
 ) }}
 
 SELECT
-    customer_id,
-    trimBoth(name)                                   AS name,
-    lower(trimBoth(email))                           AS email,
-    trimBoth(phone)                                  AS phone,
-    trimBoth(city)                                   AS city,
-    trimBoth(branch)                                 AS branch,
-    toDate(customer_since)                           AS customer_since,
+    customer_unique_id                  AS customer_id,
+    any(customer_zip_code_prefix)       AS zip_code,
+    trimBoth(any(customer_city))        AS city,
+    trimBoth(any(customer_state))       AS state,
+    count()                             AS total_order_ids
 
-    -- Hitung berapa tahun sudah menjadi customer
-    dateDiff('year', toDate(customer_since), today()) AS customer_age_years
-
-FROM {{ ref('bronze_customers') }}
-WHERE
-    customer_id IS NOT NULL AND customer_id != ''
-    AND name    IS NOT NULL AND name != ''
+FROM {{ ref('bronze_olist_customers') }}
+WHERE customer_unique_id IS NOT NULL AND customer_unique_id != ''
+GROUP BY customer_unique_id

@@ -2,9 +2,13 @@ version: 2
 
 sources:
   - name: bronze
-    description: "Raw data yang dimuat oleh ETL Python ke DuckDB schema bronze"
+    description: "Raw data yang dimuat oleh ETL Python ke ClickHouse schema bronze"
     schema: bronze
     tables:
+
+      # ─────────────────────────────────────────────────────────
+      # Toko Elektronik (DATASET=standard)
+      # ─────────────────────────────────────────────────────────
       - name: sales
         description: "Data transaksi penjualan dari sample CSV / Odoo"
         columns:
@@ -80,3 +84,101 @@ sources:
             description: "Target total revenue (Rp)"
           - name: order_target
             description: "Target jumlah transaksi"
+
+      # ─────────────────────────────────────────────────────────
+      # Olist Brazilian E-Commerce (DATASET=olist)
+      # Sumber: https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce
+      # ─────────────────────────────────────────────────────────
+      - name: olist_orders
+        description: "Olist: data pesanan (1 baris per order)"
+        columns:
+          - name: order_id
+            description: "ID unik pesanan"
+          - name: customer_id
+            description: "ID customer (berbeda tiap order — gunakan customer_unique_id dari olist_customers)"
+          - name: order_status
+            description: "Status pesanan: delivered / shipped / canceled / processing / dll"
+          - name: order_purchase_timestamp
+            description: "Timestamp pembelian"
+          - name: order_delivered_customer_date
+            description: "Tanggal pesanan diterima customer (aktual)"
+          - name: order_estimated_delivery_date
+            description: "Estimasi tanggal pengiriman"
+
+      - name: olist_order_items
+        description: "Olist: item per pesanan (granularitas: 1 baris per item dalam order)"
+        columns:
+          - name: order_id
+            description: "FK ke olist_orders"
+          - name: order_item_id
+            description: "Nomor urut item dalam order (PK bersama order_id)"
+          - name: product_id
+            description: "FK ke olist_products"
+          - name: seller_id
+            description: "FK ke olist_sellers"
+          - name: price
+            description: "Harga item (BRL)"
+          - name: freight_value
+            description: "Biaya pengiriman per item (BRL)"
+
+      - name: olist_order_payments
+        description: "Olist: data pembayaran per pesanan"
+        columns:
+          - name: order_id
+            description: "FK ke olist_orders"
+          - name: payment_sequential
+            description: "Nomor urut pembayaran (satu order bisa multi-payment)"
+          - name: payment_type
+            description: "Metode: credit_card / boleto / voucher / debit_card"
+          - name: payment_value
+            description: "Nilai pembayaran (BRL)"
+
+      - name: olist_order_reviews
+        description: "Olist: ulasan pelanggan terintegrasi dengan order"
+        columns:
+          - name: review_id
+            description: "ID unik ulasan"
+          - name: order_id
+            description: "FK ke olist_orders"
+          - name: review_score
+            description: "Skor ulasan (1-5)"
+          - name: review_comment_message
+            description: "Isi komentar ulasan"
+          - name: review_creation_date
+            description: "Tanggal ulasan dibuat"
+
+      - name: olist_customers
+        description: "Olist: data pelanggan"
+        columns:
+          - name: customer_id
+            description: "ID customer per-order (berubah tiap order baru)"
+          - name: customer_unique_id
+            description: "ID customer permanen — gunakan ini untuk analisis RFM"
+          - name: customer_state
+            description: "Negara bagian (state) asal customer — dimensi geografis"
+
+      - name: olist_sellers
+        description: "Olist: data penjual"
+        columns:
+          - name: seller_id
+            description: "ID unik penjual"
+          - name: seller_state
+            description: "Negara bagian (state) penjual — pengganti 'branch' di Minilab EduBI"
+
+      - name: olist_products
+        description: "Olist: data produk"
+        columns:
+          - name: product_id
+            description: "ID unik produk"
+          - name: product_category_name
+            description: "Kategori produk (Bahasa Portugis)"
+          - name: product_weight_g
+            description: "Berat produk (gram)"
+
+      - name: olist_category_translation
+        description: "Olist: translasi kategori produk Portugis → English"
+        columns:
+          - name: product_category_name
+            description: "Nama kategori (Portugis)"
+          - name: product_category_name_english
+            description: "Nama kategori (English)"

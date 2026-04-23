@@ -1,5 +1,6 @@
--- gold_review_summary.sql
--- Gold layer: ringkasan ulasan per cabang
+-- gold_review_summary.sql (Olist mode — fase2/olist-ecommerce)
+-- Gold layer: ringkasan ulasan per customer_state
+-- Dimensi: branch = customer_state (negara bagian asal pembeli yang mengulas)
 -- Digunakan untuk: tile rating, bar chart sentimen di Metabase
 
 {{ config(

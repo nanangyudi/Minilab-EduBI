@@ -1,11 +1,33 @@
-# Minilab EduBI
+# Minilab EduBI — Olist Brazilian E-Commerce
 
-**Proof of Concept Business Intelligence** untuk mahasiswa Program Studi Sistem Informasi.
-Mendemonstrasikan pipeline data end-to-end menggunakan stack modern yang ringan dan bisa dijalankan di laptop.
+**Branch: `fase2/olist-ecommerce`**
+
+Studi kasus adaptasi pipeline Minilab EduBI untuk dataset publik
+[Olist Brazilian E-Commerce](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce) dari Kaggle.
+Dataset ini memiliki ~100.000 pesanan, 8 file CSV relasional, dan mencakup metrik pengiriman
+yang tidak ada di dataset toko elektronik standard.
+
+---
+
+## Perbandingan: Toko Elektronik vs Olist
+
+| Aspek | Toko Elektronik (`fase2/data-mining`) | Olist (`fase2/olist-ecommerce`) |
+|-------|--------------------------------------|--------------------------------|
+| Sumber data | PostgreSQL + CSV manual | 8 CSV dari Kaggle |
+| Granularitas | 1 order = 1 produk | 1 order = banyak item |
+| Customer ID | Tetap per customer | `customer_unique_id` (customer_id berubah tiap order) |
+| Dimensi geografis | Branch (cabang fisik) | `seller_state` (negara bagian penjual) |
+| Status order | done / cancelled | delivered→done, canceled→cancelled |
+| Ulasan | Google Reviews (terpisah) | Terintegrasi di `order_reviews` |
+| Metrik pengiriman | Tidak ada | delivery_days, is_delayed |
+| Skala | 200 transaksi | ~100.000 transaksi |
+| Target penjualan | Ada (per cabang/bulan) | Tidak ada |
+
+---
 
 ## Stack Teknologi
 
-### Fase 1 — Business Intelligence Pipeline
+Sama dengan branch `fase2/data-mining` — tidak ada perubahan stack.
 
 | Komponen       | Tool              | Versi  |
 |----------------|-------------------|--------|
@@ -13,307 +35,109 @@ Mendemonstrasikan pipeline data end-to-end menggunakan stack modern yang ringan 
 | ETL            | Python + pandas   | 3.11   |
 | Transformasi   | dbt Core          | 1.8.7  |
 | Dashboard      | Metabase          | 0.59.4 |
-| Source ERP     | PostgreSQL        | 15     |
 | Runtime        | Docker Compose    | 2.x    |
-
-### Fase 2 — Data Mining & Analitik Prediktif
-
-| Komponen         | Tool                  | Versi   |
-|------------------|-----------------------|---------|
-| Notebook         | Jupyter Lab           | 4.x     |
-| ML Framework     | scikit-learn          | 1.4+    |
-| Frequent Pattern | mlxtend (FP-Growth)   | 0.23+   |
-| Experiment Track | MLflow                | 2.14.3  |
-| Visualisasi      | matplotlib / plotly   | 3.8+    |
-
-## Arsitektur
-
-Proyek ini menerapkan **Medallion Architecture** dengan **ClickHouse** sebagai Data Warehouse melalui **5 tahap pipeline eksplisit**:
-
-```
-TAHAP 1A  Extract Odoo      PostgreSQL odoo_sim → data/raw/odoo_*.csv
-TAHAP 1B  Extract Reviews   Google Places API   → data/raw/google_reviews.csv
-TAHAP 1C  File Manual       data/raw/sample_*.csv (siap dimuat)
-    ↓
-TAHAP 2   Load Bronze       data/raw/*.csv → ClickHouse bronze.*
-    ↓
-TAHAP 3   Transform Silver  dbt → ClickHouse silver.* (clean, typed)
-    ↓
-TAHAP 4   Transform Gold    dbt → ClickHouse gold.*   (agregasi KPI)
-    ↓
-TAHAP 5   Visualisasi       Metabase → connect ke ClickHouse gold
-```
-
-| Layer  | Database ClickHouse | Keterangan                          |
-|--------|---------------------|-------------------------------------|
-| Bronze | `bronze`            | Raw data, semua kolom String        |
-| Silver | `silver`            | Data bersih, tipe & validasi benar  |
-| Gold   | `gold`              | Agregasi siap dashboard             |
-
-**Catatan**: PostgreSQL hanya digunakan sebagai simulasi sumber ERP (Odoo) dan metadata Metabase. Data Warehouse sesungguhnya ada di ClickHouse.
-
-Lihat detail di [`docs/architecture.md`](docs/architecture.md).
-
-## Domain Bisnis
-
-**Sales & Customer Insight** — toko elektronik multi-cabang:
-- 200 transaksi penjualan (sample), Jan–Nov 2024
-- 20 customer, 167 done / 33 cancelled (16.5%)
-- 30 ulasan Google
-- Target penjualan bulanan per cabang
-
-Cabang: Pusat, Bandung, Surabaya, Selatan, Yogyakarta.
+| Notebook       | Jupyter Lab       | 4.x    |
+| ML Framework   | scikit-learn      | 1.4+   |
+| Experiment Track | MLflow          | 2.14.3 |
 
 ---
 
-## Cara Menjalankan (Docker)
+## Cara Menjalankan
 
 ### Prasyarat
-- Docker Desktop terinstall dan berjalan
-- **Fase 1**: Port 3000 (Metabase), 5432, 8123 tidak dipakai aplikasi lain
-- **Fase 2**: Tambahan port 8888 (Jupyter), 5000 (MLflow) tidak dipakai aplikasi lain
 
----
+1. Docker Desktop terinstall dan berjalan
+2. Download dataset Olist dari Kaggle → ekstrak ke `data/raw/olist/`:
+   ```
+   data/raw/olist/
+   ├── olist_orders_dataset.csv
+   ├── olist_order_items_dataset.csv
+   ├── olist_order_payments_dataset.csv
+   ├── olist_order_reviews_dataset.csv
+   ├── olist_customers_dataset.csv
+   ├── olist_sellers_dataset.csv
+   ├── olist_products_dataset.csv
+   └── product_category_name_translation.csv
+   ```
 
-### Opsi A — Satu Perintah (Otomatis)
-
-Jalankan semua 5 tahap pipeline sekaligus:
-
-```bash
-git clone https://github.com/nanangyudi/Minilab-EduBI.git
-cd Minilab-EduBI
-cp .env.example .env
-docker compose build
-bash scripts/run_pipeline_full.sh
-```
-
-Skrip akan menjalankan seluruh pipeline secara otomatis:
-infrastructure → Extract → Load Bronze → Transform Silver → Transform Gold → Metabase.
-
----
-
-### Opsi B — Langkah Manual (Direkomendasikan untuk Belajar)
-
-Jalankan setiap tahap secara terpisah agar proses lebih mudah dipahami.
+### Langkah Manual (Direkomendasikan untuk Belajar)
 
 ```bash
-# 1. Clone repository
+# 1. Clone repository dan pindah ke branch ini
 git clone https://github.com/nanangyudi/Minilab-EduBI.git
 cd Minilab-EduBI
+git checkout fase2/olist-ecommerce
 
 # 2. Salin konfigurasi
 cp .env.example .env
+# DATASET=olist sudah diset sebagai default di docker-compose.yml
 
 # 3. Build image
 docker compose build
 
 # 4. Jalankan infrastructure
-docker compose up -d postgres clickhouse
-# Tunggu ~15 detik hingga keduanya healthy
+docker compose up -d clickhouse
+# Tunggu ~10 detik hingga healthy
 
-# 5. TAHAP 1 + 2 — Extract & Load Bronze
+# 5. TAHAP 2 — Load Olist Bronze
 docker compose run --rm app
-# → TAHAP 1A: Extract dari Odoo (PostgreSQL odoo_sim)
-# → TAHAP 1B: Extract Google Reviews (atau fallback sample)
-# → TAHAP 1C: File manual CSV siap di data/raw/
-# → TAHAP 2 : Load semua CSV ke ClickHouse bronze.*
+# → Inisialisasi database bronze/silver/gold di ClickHouse
+# → Load 8 file CSV Olist ke bronze.olist_* (pastikan file sudah ada di data/raw/olist/)
 
 # 6. TAHAP 3 + 4 — Transform Silver & Gold
 docker compose run --rm dbt
-# → TAHAP 3: dbt transform → silver (clean, typed)
-# → TAHAP 4: dbt transform → gold  (agregasi KPI)
+# → Bronze Olist mirror models
+# → Silver: JOIN 6 tabel → silver.silver_sales (dengan delivery_days, is_delayed)
+# → Silver: silver_reviews (dari order_reviews)
+# → Silver: silver_customers (deduplikasi via customer_unique_id)
+# → Gold: gold_sales_daily (per seller_state)
+# → Gold: gold_seller_kpi (KPI per seller_state)
+# → Gold: gold_delivery_kpi (metrik pengiriman per seller_state × kategori)
+# → Gold: gold_review_summary (ulasan per customer_state)
 # → Validasi: dbt test
 
-# 7. TAHAP 5 — Visualisasi Metabase
-docker compose up -d metabase
+# 7. TAHAP 5 — Visualisasi Metabase (opsional)
+docker compose --profile bi up -d metabase
 # Buka http://localhost:3000 (tunggu ~2 menit)
 ```
 
-Lihat panduan lengkap di [`docs/deployment.md`](docs/deployment.md).
+### Catatan: PostgreSQL Tidak Diperlukan
+
+Berbeda dari dataset toko elektronik, pipeline Olist tidak memerlukan PostgreSQL
+(tidak ada ekstrak dari Odoo ERP). Anda bisa skip `docker compose up -d postgres`
+kecuali jika menggunakan Metabase (Metabase menyimpan metadata-nya di PostgreSQL).
 
 ---
 
-## Fase 2 — Data Mining (branch: `fase2/data-mining`)
-
-Fase 2 menambahkan kemampuan analitik prediktif di atas pipeline Fase 1.
-Semua service berjalan dengan **Docker profile `analytics`**.
-
-### Prasyarat Tambahan Fase 2
-
-- Port 8888 (Jupyter) dan 5000 (MLflow) tidak dipakai aplikasi lain
-- MLflow client dan server menggunakan versi yang sama (`2.14.3`) — **jangan upgrade salah satunya saja**
-- Folder `experiments/` harus bisa ditulis oleh Docker (di Windows: pastikan drive di-share di Docker Desktop Settings → Resources → File Sharing)
-
-### Menjalankan Fase 2
-
-**1. Pindah ke branch Fase 2:**
-```bash
-git clone https://github.com/nanangyudi/Minilab-EduBI.git   # jika belum ada
-cd Minilab-EduBI
-git checkout fase2/data-mining
-cp .env.example .env
-```
-
-**2. Build image:**
-```bash
-docker compose build jupyter
-```
-
-**3. Jalankan pipeline Fase 1 terlebih dahulu:**
-```bash
-docker compose up -d postgres clickhouse
-docker compose run --rm app
-docker compose run --rm dbt
-```
-
-**4. Jalankan service Fase 2:**
-```bash
-docker compose --profile analytics up -d
-```
-
-> **Windows**: Jika Jupyter tidak dapat menulis artifact MLflow, jalankan:
-> ```powershell
-> docker compose --profile analytics up -d jupyter --force-recreate
-> ```
-
-**5. Akses:**
-- Jupyter Lab : http://localhost:8888 — token: `minilab`
-- MLflow UI   : http://localhost:5000
-
-**6. Mulai dari notebook verifikasi:**
-
-Buka `notebooks/00_setup_verification.ipynb` dan jalankan semua cell dari atas ke bawah.
-Jika semua cell hijau (tidak error), lanjutkan ke notebook berikutnya.
-
-### Notebook yang Tersedia
-
-| # | Notebook | Teknik | Sumber Data | Status |
-|---|----------|--------|-------------|--------|
-| 00 | `00_setup_verification.ipynb`          | Cek koneksi ClickHouse & MLflow        | —                       | ✅ |
-| 01 | `01_clustering_customer_rfm.ipynb`     | K-Means, RFM Segmentation              | `silver.silver_sales`   | ✅ |
-| 02 | `02_classification_order_status.ipynb` | Random Forest, ROC-AUC (binary)        | `silver.silver_sales`   | ✅ |
-| 03 | `03_regression_revenue_forecast.ipynb` | Linear/Ridge Regression, TimeSeriesSplit | `gold.gold_sales_daily` | ✅ |
-| 04 | `04_association_market_basket.ipynb`   | FP-Growth, Association Rules           | `silver.silver_sales`   | ✅ |
-
-Semua notebook (01–04) mencatat parameter, metrik, dan model ke MLflow secara otomatis.
-Hasil eksperimen dapat dilihat di http://localhost:5000.
-
-#### Catatan Implementasi per Notebook
-
-**NB 01 — Clustering (K-Means RFM)**
-- Segmentasi pelanggan berdasarkan Recency, Frequency, Monetary
-- Query dari `silver.silver_sales WHERE status='done'`
-- Hasil: 3 cluster (High Value, Regular, Low Engagement)
-
-**NB 02 — Classification (Random Forest)**
-- Target: prediksi `status` order (done=1 / cancelled=0)
-- Dataset: 200 order, 16.5% cancellation rate — class imbalance ditangani dengan `class_weight='balanced'`
-- Metrik: Accuracy, F1, ROC-AUC (binary `predict_proba[:, 1]`)
-
-**NB 03 — Regression (Revenue Forecast)**
-- Target: prediksi `total_revenue` harian
-- Fitur: lag features, rolling mean, hari dalam minggu/bulan
-- Validasi: TimeSeriesSplit (no data leakage)
-
-**NB 04 — Association Rules (FP-Growth)**
-- Unit basket: per `customer_id` (bukan per order — tiap order hanya 1 produk)
-- Item: `product_type` yang di-derive dari `product_name` (10 jenis: Laptop, Monitor, Keyboard, Mouse, Audio, Storage, Memory, Webcam, Peripheral, Printer)
-- `MIN_SUPPORT=0.15` (3/20 customer), `MIN_CONFIDENCE=0.5`, `MIN_LIFT=1.0`
-- Hasil: 9+ frequent 1-itemsets, 20+ 2-itemsets, puluhan association rules cross-selling
-
-### Struktur Tambahan Fase 2
+## Arsitektur Pipeline Olist
 
 ```
-├── Dockerfile.jupyter          ← JupyterLab (scipy-notebook:python-3.11)
-├── requirements-fase2.txt      ← scikit-learn, mlxtend, mlflow==2.14.3, plotly
-├── experiments/                ← MLflow artifacts, model registry, SQLite DB
-├── notebooks/
-│   ├── utils.py                ← helper: get_ch_client(), read_sql(), mlflow_setup()
-│   ├── 00_setup_verification.ipynb
-│   ├── 01_clustering_customer_rfm.ipynb
-│   ├── 02_classification_order_status.ipynb
-│   ├── 03_regression_revenue_forecast.ipynb
-│   └── 04_association_market_basket.ipynb
-└── scripts/
-    └── run_fase2.sh            ← shortcut CLI: start/stop/status/logs/pipeline
+data/raw/olist/*.csv  (8 file, download manual dari Kaggle)
+    ↓
+TAHAP 2   Load Bronze    CSV → ClickHouse bronze.olist_*  (all-String, raw)
+    ↓
+TAHAP 3   Silver (dbt)   JOIN 6 tabel → silver.silver_sales
+                          delivery_days, is_delayed, customer_unique_id
+    ↓
+TAHAP 4   Gold (dbt)     silver.silver_sales → gold.*
+                          gold_sales_daily, gold_seller_kpi,
+                          gold_delivery_kpi, gold_review_summary
+    ↓
+TAHAP 5   Metabase        Koneksi ke ClickHouse gold.*
 ```
 
 ---
 
-## Struktur Proyek
+## Tabel Gold yang Tersedia
 
-```
-Minilab-EduBI/
-│
-├── README.md
-├── requirements.txt
-├── Dockerfile              ← image Python + dbt
-├── Dockerfile.metabase     ← Metabase v0.59.4 (ClickHouse built-in)
-├── docker-compose.yml      ← multi-fase: profiles bi (Metabase) & analytics (Jupyter, MLflow)
-├── .env.example
-├── .gitignore
-│
-├── data/
-│   ├── raw/
-│   │   ├── sample_sales.csv        ← 200 transaksi (fallback)
-│   │   ├── sample_customers.csv    ← 20 customer
-│   │   ├── sample_reviews.csv      ← 30 ulasan
-│   │   └── sample_targets.csv      ← target bulanan
-│   └── processed/
-│
-├── etl/
-│   ├── utils.py              ← koneksi ClickHouse & PostgreSQL
-│   ├── init_clickhouse.py    ← buat database bronze/silver/gold
-│   ├── load_csv.py           ← load CSV → ClickHouse bronze
-│   ├── extract_odoo.py       ← extract dari PG odoo_sim (opsional)
-│   ├── extract_google_reviews.py
-│   └── run_pipeline.py       ← orchestrator ETL
-│
-├── dbt_project/
-│   ├── dbt_project.yml
-│   ├── profiles.yml.example
-│   ├── packages.yml
-│   ├── macros/
-│   │   └── generate_schema_name.sql
-│   └── models/
-│       ├── sources.yml
-│       ├── schema.yml          ← tests not_null & unique
-│       ├── bronze/             ← 4 model (mirror dari ClickHouse bronze)
-│       ├── silver/             ← 4 model (cleaned, ClickHouse SQL)
-│       └── gold/               ← 3 model (aggregated, ClickHouse SQL)
-│
-├── scripts/
-│   ├── init_postgres.sql       ← seed data odoo_sim
-│   ├── run_etl.sh              ← jalankan ETL (TAHAP 1+2)
-│   ├── run_dbt.sh              ← jalankan dbt (TAHAP 3+4)
-│   └── run_pipeline_full.sh    ← jalankan semua 5 tahap sekaligus
-│
-├── notebooks/
-│   ├── utils.py                    ← helper koneksi (Fase 2)
-│   ├── exploration.ipynb           ← eksplorasi via clickhouse-connect
-│   ├── 00_setup_verification.ipynb ← cek koneksi service (Fase 2)
-│   ├── 01_clustering_customer_rfm.ipynb
-│   ├── 02_classification_order_status.ipynb
-│   ├── 03_regression_revenue_forecast.ipynb
-│   └── 04_association_market_basket.ipynb
-│
-├── experiments/                    ← MLflow artifacts (Fase 2)
-│
-└── docs/
-    ├── architecture.md
-    ├── data_dictionary.md
-    ├── deployment.md
-    └── metabase_setup.md
-```
+| Tabel | Keterangan | Dimensi Utama |
+|-------|-----------|---------------|
+| `gold_sales_daily` | Penjualan harian + metrik pengiriman | seller_state, order_date |
+| `gold_seller_kpi` | KPI per negara bagian penjual | seller_state |
+| `gold_delivery_kpi` | Ketepatan pengiriman per seller_state × kategori | seller_state, category |
+| `gold_review_summary` | Ringkasan ulasan per negara bagian pembeli | customer_state (branch) |
 
----
-
-## Setup Metabase
-
-Setelah `docker compose up -d metabase`, buka **http://localhost:3000** (tunggu ~2 menit).
-Driver ClickHouse sudah **built-in** di Metabase v0.59.4 — tidak perlu plugin tambahan.
-
-Tambah koneksi database baru:
+### Setup Metabase
 
 | Field    | Nilai        |
 |----------|--------------|
@@ -324,15 +148,139 @@ Tambah koneksi database baru:
 | Username | `default`    |
 | Password | *(kosong)*   |
 
-Tabel yang tersedia di Gold layer:
+---
 
-| Tabel                  | Keterangan                              |
-|------------------------|-----------------------------------------|
-| `gold_sales_daily`     | Penjualan harian per cabang & kategori  |
-| `gold_branch_kpi`      | KPI per cabang: revenue, target, rating |
-| `gold_review_summary`  | Ringkasan sentimen ulasan per cabang    |
+## Perubahan Kunci vs Branch Standard
 
-Lihat panduan di [`docs/metabase_setup.md`](docs/metabase_setup.md).
+### ETL (Python)
+- `etl/run_pipeline.py`: Deteksi `DATASET=olist` → panggil `load_olist.load_all()`, skip Extract Odoo/Reviews
+- `etl/load_olist.py`: Loader baru — DDL 8 tabel Bronze, `TRUNCATE + INSERT` dari CSV
+
+### dbt Models
+- **Bronze** (8 file baru): Mirror dari `bronze.olist_*` ke dbt models
+- **silver_sales**: JOIN 6 tabel, tambah `seller_state`, `delivery_days`, `is_delayed`
+- **silver_reviews**: Dari `olist_order_reviews`, dimensi = `customer_state`
+- **silver_customers**: Deduplikasi `customer_unique_id` via GROUP BY
+- **silver_targets**: Stub kosong (Olist tidak punya data target)
+- **gold_sales_daily**: `seller_state` menggantikan `branch`
+- **gold_seller_kpi**: KPI per seller_state (pengganti `gold_branch_kpi`)
+- **gold_delivery_kpi**: Model baru — metrik pengiriman per seller_state × kategori
+- **gold_branch_kpi**: Stub kosong (gunakan `gold_seller_kpi`)
+
+---
+
+## Adaptasi Notebook Data Mining
+
+Notebook `01`–`04` di branch ini masih menggunakan skema toko elektronik standard.
+Berikut penyesuaian yang diperlukan untuk analisis Olist:
+
+### NB 01 — Clustering RFM
+```python
+# Ganti query dari:
+SELECT customer_id, order_date, total_price FROM silver.silver_sales WHERE status='done'
+
+# Menjadi (Olist):
+SELECT customer_id, order_date, total_price
+FROM silver.silver_sales
+WHERE status='done' AND customer_id != ''
+-- customer_id = customer_unique_id (sudah deduplikasi di silver_sales)
+```
+Dataset Olist (~100k orders, ~96k unique customers) memberikan clustering yang lebih representatif.
+
+### NB 02 — Klasifikasi
+```python
+# Target baru: prediksi is_delayed (bukan status done/cancelled)
+# Karena cancelled di Olist hanya ~1% — class imbalance sangat ekstrem
+
+# Query Olist:
+SELECT seller_state, category, unit_price, freight_value,
+       delivery_days, is_delayed
+FROM silver.silver_sales
+WHERE status='done' AND is_delayed IS NOT NULL
+```
+Fitur yang relevan: `freight_value`, `seller_state`, `category`, `unit_price`.
+
+### NB 03 — Regresi
+```python
+# Target baru: prediksi delivery_days (waktu pengiriman)
+# Atau: forecasting revenue harian dari gold_sales_daily
+
+# Query Olist:
+SELECT order_date, seller_state, avg_delivery_days, total_revenue
+FROM gold.gold_sales_daily ORDER BY order_date
+```
+
+### NB 04 — Association Rules (Keunggulan Utama Olist)
+```python
+# Olist adalah dataset IDEAL untuk Market Basket Analysis!
+# Karena 1 order bisa punya BANYAK item → basket per order_id natural
+
+# Query Olist:
+SELECT order_id, category
+FROM silver.silver_sales
+WHERE status='done' AND category != 'unknown'
+
+# Basket = order_id (bukan customer_id seperti di Minilab standard)
+# Item   = category (sudah tersedia, tidak perlu derive product_type)
+
+basket = df.groupby('order_id')['category'].apply(list)
+MIN_SUPPORT = 0.01  # Bisa lebih rendah karena 100k+ order
+```
+Dengan 100k+ order, rules yang terbentuk jauh lebih kaya dan representatif.
+
+---
+
+## Pertanyaan Diskusi
+
+1. Mengapa Olist menggunakan `customer_unique_id` untuk analisis RFM, bukan `customer_id`?
+2. Pada Olist, mengapa basket per `order_id` lebih natural daripada per `customer_id`?
+3. Apa artinya `is_delayed = 1`? Metrik bisnis apa yang bisa dibangun dari ini?
+4. Mengapa `seller_state` menjadi dimensi geografis di Olist, berbeda dari `branch` di toko elektronik?
+5. Jika ingin menghubungkan ulasan (review_score) dengan performa pengiriman, JOIN apa yang diperlukan?
+
+---
+
+## Struktur Proyek (Perubahan dari Branch Standard)
+
+```
+Minilab-EduBI/
+├── data/
+│   └── raw/
+│       └── olist/                         ← Download dari Kaggle (tidak di-commit)
+│           ├── README.md                  ← Petunjuk download
+│           ├── olist_orders_dataset.csv
+│           ├── olist_order_items_dataset.csv
+│           └── ...
+│
+├── etl/
+│   ├── load_olist.py                      ← Loader baru untuk 8 tabel Olist
+│   └── run_pipeline.py                    ← Ditambah DATASET=olist mode
+│
+└── dbt_project/
+    └── models/
+        ├── sources.yml                    ← Ditambah 8 sumber Olist
+        ├── schema.yml                     ← Disesuaikan untuk model Olist
+        ├── bronze/
+        │   ├── bronze_olist_orders.sql    ← 8 file baru (mirror Olist Bronze)
+        │   ├── bronze_olist_order_items.sql
+        │   ├── bronze_olist_order_payments.sql
+        │   ├── bronze_olist_order_reviews.sql
+        │   ├── bronze_olist_customers.sql
+        │   ├── bronze_olist_sellers.sql
+        │   ├── bronze_olist_products.sql
+        │   └── bronze_olist_category_translation.sql
+        ├── silver/
+        │   ├── silver_sales.sql           ← Olist: JOIN 6 tabel, delivery metrics
+        │   ├── silver_reviews.sql         ← Olist: dari order_reviews
+        │   ├── silver_customers.sql       ← Olist: deduplikasi customer_unique_id
+        │   └── silver_targets.sql         ← Stub kosong (tidak berlaku untuk Olist)
+        └── gold/
+            ├── gold_sales_daily.sql       ← Olist: seller_state sebagai dimensi
+            ├── gold_seller_kpi.sql        ← Baru: KPI per seller_state
+            ├── gold_delivery_kpi.sql      ← Baru: metrik pengiriman
+            ├── gold_review_summary.sql    ← Olist: ulasan per customer_state
+            └── gold_branch_kpi.sql        ← Stub kosong (gunakan gold_seller_kpi)
+```
 
 ---
 
@@ -341,36 +289,16 @@ Lihat panduan di [`docs/metabase_setup.md`](docs/metabase_setup.md).
 | Fase | Topik | Branch | Status |
 |------|-------|--------|--------|
 | 1 | BI Pipeline (ETL → dbt → Metabase) | `main` | ✅ Selesai |
-| 2 | Data Mining (Jupyter, MLflow, scikit-learn) | `fase2/data-mining` | ✅ Selesai — nb 00–04 ✅ |
+| 2a | Data Mining — Toko Elektronik | `fase2/data-mining` | ✅ Selesai |
+| 2b | Olist E-Commerce Scaffold | `fase2/olist-ecommerce` | ✅ Pipeline siap |
 | 3 | ML Deployment (FastAPI + MLflow serving) | `fase3/ml-deployment` | 📋 Planned |
 | 4 | Realtime Pipeline (Kafka + Flink) | `fase4/realtime-pipeline` | 📋 Planned |
-
-## Saran Pengembangan Selanjutnya
-
-1. Hubungkan ke Odoo asli via XML-RPC (`etl/extract_odoo.py`)
-2. Tambah model dbt: product performance, cohort analysis, customer segmentation
-3. Tambah Airflow untuk scheduling pipeline otomatis
-4. Tambah dbt test lebih lanjut: `accepted_values`, `relationships`
-5. Jalankan `dbt docs generate && dbt docs serve` untuk dokumentasi model interaktif
-6. Kembangkan Fase 2: tuning hyperparameter, cross-validation, model comparison
-7. Fase 3: expose model terbaik sebagai REST API dengan FastAPI + MLflow serving
-
----
-
-## Catatan Keterbatasan PoC
-
-- Data sample terbatas (200 transaksi, 20 customer), tidak representatif produksi
-- Tidak ada scheduling — pipeline dijalankan manual
-- ClickHouse default user (tanpa password) — hanya untuk demo lokal
-- Tidak ada autentikasi Metabase multi-user
-- MLflow menggunakan SQLite backend — tidak direkomendasikan untuk produksi (gunakan PostgreSQL)
-- Fase 2 dijalankan sebagai `root` di dalam container untuk kemudahan setup lokal — tidak untuk produksi
 
 ---
 
 ## Dokumentasi
 
 - [Arsitektur Data](docs/architecture.md)
-- [Data Dictionary](docs/data_dictionary.md)
+- [Panduan Download Olist](data/raw/olist/README.md)
 - [Panduan Deployment](docs/deployment.md)
 - [Setup Metabase](docs/metabase_setup.md)

@@ -95,6 +95,7 @@ services:
       PG_PASSWORD:         ${PG_PASSWORD:-minilab123}
       RAW_DIR:             /app/data/raw
       USE_POSTGRES_SOURCE: ${USE_POSTGRES_SOURCE:-false}
+      DATASET:             ${DATASET:-olist}
     volumes:
       - ./data/raw:/app/data/raw
 
